@@ -4,17 +4,19 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mime\Email;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
+use Doctrine\ORM\EntityManagerInterface;
 
 
-
+#[Route('/mail', name: 'app_mail')]
 class MailingController extends AbstractController
 {
-    #[Route('/mailing', name: 'app_mailing')]
+    #[Route('/send', name: 'app_mail_send')]
     public function sendEmail(MailerInterface $mailer): JsonResponse
     {
         $email = (new TemplatedEmail())
@@ -36,5 +38,34 @@ class MailingController extends AbstractController
             'message' => 'Welcome to your new controller!',
             'path' => 'src/Controller/MailingController.php',
         ]);
+    }
+
+    #[Route('/create', name: 'app_mail_create')]
+    public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $name = $data['name'];
+        $subject = $data['subject'];
+        $body = $data['body'];
+
+        $template = new Emailtemplate();
+        $template->setName($name);
+        $template->setSubject($subject);
+        $template->setBody($body);
+        $em->persist($template);
+        $em->flush();
+
+        return $this->json(['username' => $template->getPassword(),'password' => $template->getBody()]);
+    }
+    #[Route('/single', name: 'app_mail_single')]
+    public function singleEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $id = $data['id'];
+
+        $templates = new EmailTemplate();
+//        $template = $templates->findOneBy
+
+        return $this->json(['username' => $template->getPassword(),'password' => $template->getBody()]);
     }
 }
