@@ -9,6 +9,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 
 #[Route('/contact')]
 class ContactController extends AbstractController
@@ -49,6 +53,44 @@ class ContactController extends AbstractController
         // Delete the contact
     }*/
 
+    #[Route('', name: 'contact_create', methods: ['POST'])]
+    /**
+     * Create a new contact
+     * POST /contact
+     * This method handles the creation of a new contact. It expects the contact data to be sent in the request body.
+     *
+     * @param Request $request The HTTP request
+     * @param EntityManagerInterface $entityManager
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     *
+     * @Route("/", name="contact_create", methods={"POST"})
+     */
+    public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse    {
+        $contactData = $request->getContent();
+
+        // Deserialize the request content into a Contact entity
+        $contact = $serializer->deserialize($contactData, Contact::class, 'json');
+
+        // Validate the entity
+        $errors = $validator->validate($contact);
+        if (count($errors) > 0) {
+            // Handle validation errors
+            return $this->json(['errors' => (string) $errors], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Persist the new contact
+        $entityManager->persist($contact);
+        $entityManager->flush();
+
+        // Return a success response
+        return $this->json([
+            'message' => 'Contact created successfully',
+            'contact' => $contact
+        ], JsonResponse::HTTP_CREATED);
+    }
+
     // List all contacts
     // GET /contact/list
     // This method returns a list of all contacts.
@@ -57,7 +99,7 @@ class ContactController extends AbstractController
     {
         $contacts = $repository->findAll();
         $contactData = [];
-    
+
         foreach ($contacts as $contact) {
             $contactData[] = [
                 'id' => $contact->getId(),
@@ -82,7 +124,7 @@ class ContactController extends AbstractController
                 'user_id' => $contact->getUserId() ? $contact->getUserId()->getId() : null,
             ];
         }
-    
+
         return $this->json($contactData);
-    }    
+    }
 }
