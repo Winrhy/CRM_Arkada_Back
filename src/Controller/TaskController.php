@@ -177,10 +177,20 @@ class TaskController extends AbstractController
         return $this->json(['message' => 'Task successfully deleted'], JsonResponse::HTTP_OK);
     }
 
-    // List all tasks
-    #[Route('', name: 'task_list', methods: ['GET'])]
-    public function list(TaskRepository $repository): JsonResponse {
-        // Fetch all Task objects
-        // Return a JSON response with the list of Tasks
-    }
+    /**
+     * Get a list of tasks associated with a user by user ID.
+     *
+     * @param TaskRepository $repository The TaskRepository to fetch tasks.
+     * @param string $userId The ID of the user.
+     * @return JsonResponse A JSON response containing the list of tasks.
+     *
+     * @Route("/user/{userId}/tasks", name="user_tasks_list", methods={"GET"})
+     */
+    public function listUserTasks(TaskRepository $repository, string $userId): JsonResponse {
+        // Use the TaskRepository to fetch tasks associated with the user by user ID
+        $tasks = $repository->findBy(['user' => $userId]);
+
+        // Return the list of tasks as a JSON response
+        return $this->json(['tasks' => $tasks]);
+}
 }
