@@ -28,7 +28,6 @@ class ContactController extends AbstractController
      *
      * @return JsonResponse
      *
-     * @Route('', name: 'contact_create', methods: ['POST'])
      */
     #[Route('', name: 'contact_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse {
@@ -82,9 +81,6 @@ class ContactController extends AbstractController
     #[Route('/{id}', name: 'contact_by_id', methods: ['GET'])]
     public function read(Contact $contact): JsonResponse
     {
-        // Vous avez déjà récupéré le contact par son ID grâce à l'injection de dépendance Contact $contact.
-        // Vous pouvez maintenant renvoyer les détails du contact dans une réponse JSON.
-
         return $this->json([
             'contact' => $contact,
         ]);
@@ -173,10 +169,16 @@ class ContactController extends AbstractController
     }
 
 
-    // List all contacts
-    // GET /contact/list
-    // This method returns a list of all contacts.
-    #[Route('/list', name: 'contact_list', methods: ['GET'])]
+    /**
+     * List all contacts.
+     *
+     * This method returns a list of all contacts.
+     *
+     * @param ContactRepository $repository The Contact repository.
+     *
+     * @return JsonResponse A JSON response containing the list of contacts.
+     */
+    #[Route('', name: 'contact_list', methods: ['GET'])]
     public function list(ContactRepository $repository): JsonResponse
     {
         $contacts = $repository->findAll();
