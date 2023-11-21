@@ -98,16 +98,34 @@ class ContactController extends AbstractController
     public function update(Request $request, Contact $contact): Response
     {
         // Update the contact with the request data
+    */
+
+    /**
+     * Delete a specific contact by ID.
+     *
+     * Deletes a specific contact by its ID.
+     *
+     * @Route("/contact/{id}", name="contact_delete", methods={"DELETE"})
+     *
+     * @param Contact $contact The contact entity to delete.
+     *
+     * @return JsonResponse A JSON response indicating the result of the deletion.
+     */
+    #[Route('/{id}', name: 'contact_delete', methods: ['DELETE'])]
+    public function delete(Contact $contact, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Check if the contact exists
+        if (!$contact) {
+            return $this->json(['error' => 'Contact not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Remove the contact from the database
+        $entityManager->remove($contact);
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Contact deleted successfully'], JsonResponse::HTTP_OK);
     }
 
-    // Delete a specific contact
-    // DELETE /contact/{id}
-    // This method deletes a specific contact by its ID.
-    #[Route('/{id}', name: 'contact_delete', methods: ['DELETE'])]
-    public function delete(Contact $contact): JsonResponse
-    {
-        // Delete the contact
-    }*/
 
     // List all contacts
     // GET /contact/list
