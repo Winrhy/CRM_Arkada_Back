@@ -184,7 +184,6 @@ class TaskController extends AbstractController
      * @param string $userId The ID of the user.
      * @return JsonResponse A JSON response containing the list of tasks.
      *
-     * @Route("/user/{userId}/tasks", name="user_tasks_list", methods={"GET"})
      */
     public function listUserTasks(TaskRepository $repository, string $userId): JsonResponse {
         // Use the TaskRepository to fetch tasks associated with the user by user ID
