@@ -2,6 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Mail;
+use App\Entity\MailTemplate;
+use App\Entity\User;
+use App\Repository\MailRepository;
+use App\Repository\MailTemplateRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,61 +17,120 @@ use Symfony\Component\Mime\Email;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Finder\Finder;
+
 
 
 #[Route('/mail', name: 'app_mail')]
 class MailingController extends AbstractController
 {
-    #[Route('/send', name: 'app_mail_send')]
-    public function sendEmail(MailerInterface $mailer): JsonResponse
+    private function sendEmail(MailerInterface $mailer,string $emailId, string $from, string $to, string $subject, string $template, string $name, string $body =''): JsonResponse
     {
+        $templateDir = $this->getParameter('kernel.project_dir') . '/templates/email';
+        $finder = new Finder();
+        $files = $finder->in($templateDir)->files()->name('*.html.twig');
+        $templates=[];
+        foreach ($files as $file) {
+            $templates[] = $file->getFilename();
+        }
+
         $email = (new TemplatedEmail())
-            ->from('fabien@example.com')
-            ->to(new Address('ryan@example.com'))
-            ->subject('Thanks for signing up!')
+            ->from($from)
+            ->to(new Address($to))
+            ->subject($subject)
 
-            // path of the Twig template to render
-            ->htmlTemplate('emails/signup.html.twig')
+            ->htmlTemplate('email/' . $template)
 
-            // pass variables (name => value) to the template
             ->context([
                 'expiration_date' => new \DateTime('+7 days'),
-                'username' => 'foo',
+                'username' => $name,
+                'body'=>$body,
+                'email_id'=>$emailId
             ])
         ;
-        $mailer->send($email);
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/MailingController.php',
-        ]);
+        try {
+            $mailer->send($email);
+
+            return $this->json([
+                'message' => 'Email envoyé avec succès !',
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Une erreur est survenue lors de l\'envoi de l\'email.',
+                'message' => $e->getMessage(),
+                $emailId
+            ], 500);
+        }
     }
 
     #[Route('/create', name: 'app_mail_create')]
-    public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer): JsonResponse
+    public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, MailRepository $mailRepository): JsonResponse
     {
+        $emails=$mailRepository->findAll();
+        $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
         $data = json_decode($request->getContent(), true);
+        $from = $data['from'];
+        $to = $data['to'];
+        $subject = $data['subject'] ?? 'Arkada Studio';
+        $template = $data['template'] ?? 'signup.html.twig';
         $name = $data['name'];
-        $subject = $data['subject'];
-        $body = $data['body'];
+        $body = $data['body'] ?? '';
 
-        $template = new Emailtemplate();
-        $template->setName($name);
-        $template->setSubject($subject);
-        $template->setBody($body);
-        $em->persist($template);
+        $email = new Mail();
+        $email->setSubject($subject);
+        $email->setRead(false);
+        $email->setBody($body);
+        $email->setReceiver($to);
+        $email->setUserId($user);
+        $email->setTimestamp(new \DateTimeImmutable());
+        $email->setSenderMail('arkada@gmail.com');
+        $email->setDeadPixelId(1);
+        $em->persist($email);
+        $em->flush();
+        $emailId = $email->getId();
+
+        $response = $this->sendEmail(
+            $mailer,
+            $emailId,
+            $from,
+            $to,
+            $subject,
+            $template,
+            $name,
+            $body
+        );
+        return $this->json($response);
+    }
+
+
+    #[Route('/single', name: 'app_mail_single')]
+    public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em): JsonResponse
+    {
+//        $data = json_decode($request->getContent(), true);
+//        $id = $data['id'];
+//
+//        $template = $rep->findOneBy(['id'=>$id]);
+//        if (!$template) {
+//            return $this->json(['error' => 'Email not found'], 404);
+//        }
+//        return $this->json([$template]);
+
+        $user = new User();
+        $user->setEmail('test');
+        $user->setFirstName('paul');
+        $user->setLastName('delamare');
+        $user->setCreatedAt(new \DateTimeImmutable());
+        $user->setRoles(['ROLE_USER']);
+        $user->setJwtToken('bedhgfyuefbeyhufbguye');
+
+        // Générer un mot de passe aléatoire et l'encoder
+        $plainPassword = 'paul1234';
+        $user->setPassword($plainPassword);
+
+        // Persistez l'utilisateur en base de données
+        $em->persist($user);
         $em->flush();
 
-        return $this->json(['username' => $template->getPassword(),'password' => $template->getBody()]);
-    }
-    #[Route('/single', name: 'app_mail_single')]
-    public function singleEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        $id = $data['id'];
-
-        $templates = new EmailTemplate();
-//        $template = $templates->findOneBy
-
-        return $this->json(['username' => $template->getPassword(),'password' => $template->getBody()]);
+        return $this->json("Faux utilisateur créé avec succès !");
     }
 }
