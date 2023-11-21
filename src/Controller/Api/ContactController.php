@@ -91,14 +91,60 @@ class ContactController extends AbstractController
     }
 
 
-    /*// Update a specific contact
-    // PUT /contact/{id}
-    // This method updates an existing contact with the data sent in the request body.
+    /**
+     * Update a specific contact by ID.
+     *
+     * Updates an existing contact with the data sent in the request body.
+     *
+     * @Route("/contact/{id}", name="contact_update", methods={"PUT"})
+     *
+     * @param Request $request The HTTP request object.
+     * @param Contact $contact The contact entity to update.
+     * @param EntityManagerInterface $entityManager The entity manager for database operations.
+     * @param SerializerInterface $serializer The serializer for deserializing request data.
+     * @param ValidatorInterface $validator The validator for validating the contact data.
+     *
+     * @return JsonResponse A JSON response indicating the result of the update.
+     */
     #[Route('/{id}', name: 'contact_update', methods: ['PUT'])]
-    public function update(Request $request, Contact $contact): Response
+    public function update(Request $request, Contact $contact, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
-        // Update the contact with the request data
-    */
+        // Check if the contact exists
+        if (!$contact) {
+            return $this->json(['error' => 'Contact not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Get JSON data from the request
+        $contactData = $request->getContent();
+
+        try {
+            // Deserialize the data into the existing Contact object
+            $serializer->deserialize($contactData, Contact::class, 'json', ['object_to_populate' => $contact]);
+        } catch (\Exception $e) {
+            // Handle deserialization errors
+            return $this->json(['error' => 'Invalid JSON: ' . $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Validate the updated Contact object
+        $errors = $validator->validate($contact);
+        if (count($errors) > 0) {
+            // If there are validation errors, return them
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Update the modified_at timestamp
+        $contact->setModifiedAt(new \DateTimeImmutable());
+
+        // Persist the updated Contact object in the database
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Contact updated successfully', 'contact' => $contact]);
+    }
+
 
     /**
      * Delete a specific contact by ID.
