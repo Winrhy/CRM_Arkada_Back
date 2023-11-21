@@ -68,16 +68,30 @@ class ContactController extends AbstractController
     }
 
 
-    /*// Read a specific contact by ID
-    // GET /contact/{id}
-    // This method retrieves the details of a specific contact by its ID.
-    #[Route('/{id}', name: 'contact_read', methods: ['GET'])]
+    /**
+     * Read a specific contact by ID.
+     *
+     * Retrieves the details of a specific contact by its ID.
+     *
+     * @Route("/contact/{id}", name="contact_read", methods={"GET"})
+     *
+     * @param Contact $contact The contact entity retrieved by its ID.
+     *
+     * @return JsonResponse A JSON response containing the contact details.
+     */
+    #[Route('/{id}', name: 'contact_by_id', methods: ['GET'])]
     public function read(Contact $contact): JsonResponse
     {
-        // Return the contact data
+        // Vous avez déjà récupéré le contact par son ID grâce à l'injection de dépendance Contact $contact.
+        // Vous pouvez maintenant renvoyer les détails du contact dans une réponse JSON.
+
+        return $this->json([
+            'contact' => $contact,
+        ]);
     }
 
-    // Update a specific contact
+
+    /*// Update a specific contact
     // PUT /contact/{id}
     // This method updates an existing contact with the data sent in the request body.
     #[Route('/{id}', name: 'contact_update', methods: ['PUT'])]
