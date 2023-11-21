@@ -150,31 +150,11 @@ class TaskController extends AbstractController
         ], JsonResponse::HTTP_OK);
     }
 
-    /**
-     * Delete a specific task by its UUID.
-     *
-     * @param string $id
-     * @param TaskRepository $repository
-     * @param EntityManagerInterface $entityManager
-     *
-     * @return JsonResponse
-     */
+    // Delete a specific task by ID
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
-    public function delete(string $id, TaskRepository $repository, EntityManagerInterface $entityManager): JsonResponse {
-        // Retrieve the task by its UUID
-        $task = $repository->find($id);
-
-        // If the task is not found, return a 404 error
-        if (!$task) {
-            throw new NotFoundHttpException('Task not found');
-        }
-
+    public function delete(Task $task, EntityManagerInterface $entityManager): JsonResponse {
         // Remove the Task from the database
-        $entityManager->remove($task);
-        $entityManager->flush();
-
-        // Return a success response
-        return $this->json(['message' => 'Task successfully deleted'], JsonResponse::HTTP_OK);
+        // Return a JSON response
     }
 
     // List all tasks
