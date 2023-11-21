@@ -88,7 +88,7 @@ class TaskController extends AbstractController
 
         // If the task is not found, return a 404 error
         if (!$task) {
-            throw new NotFoundHttpException('Task not found');
+            throw new NotFoundHttpException('TaskDoesNotExist');
         }
 
         // Return the task details in a JSON response
@@ -115,7 +115,7 @@ class TaskController extends AbstractController
 
         // If the task is not found, return a 404 error
         if (!$task) {
-            throw new NotFoundHttpException('Task not found');
+            throw new NotFoundHttpException('TaskDoesNotExist');
         }
 
         // Get JSON data from the request
