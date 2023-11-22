@@ -176,6 +176,30 @@ class CompanyController extends AbstractController
      */
     #[Route('', name: 'company_list', methods: ['GET'])]
     public function list(CompanyRepository $repository): JsonResponse {
-        // La logique de listage de toutes les entreprises
+        {
+            $companies = $repository->findAll();
+            $companyData = [];
+
+            foreach ($companies as $company) {
+                $companyData[] = [
+                    'id' => $company->getId(),
+                    'name' => $company->getName(),
+                    'address' => $company->getAddress(),
+                    'country' => $company->getCountry(),
+                    'city' => $company->getCity(),
+                    'postal_code' => $company->getPostalCode(),
+                    'created_at' => $company->getCreatedAt() ? $company->getCreatedAt()->format('c') : null,
+                    'modified_at' => $company->getModifiedAt() ? $company->getModifiedAt()->format('c') : null,
+                    'sector' => $company->getSector(),
+                    'size' => $company->getSize(),
+                    'website' => $company->getWebsite(),
+                    'phone_number' => $company->getPhoneNumber(),
+                    'email' => $company->getEmail(),
+                    'type' => $company->getType()
+                ];
+            }
+
+            return $this->json($companyData);
+        }
     }
 }
