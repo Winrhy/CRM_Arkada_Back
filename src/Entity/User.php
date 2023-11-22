@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Symfony\Component\Uid\UuidV7 as Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -43,6 +43,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     private ?string $jwt_token = null;
+
+//    #[ORM\Column(length: 255)]
+//    private ?string $username = null;
 
     /**
      * @var string The hashed password
@@ -593,4 +596,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->jwt_token = $jwt_token;
     }
+
+//    /**
+//     * @return string|null
+//     */
+//    public function getUsername(): ?string
+//    {
+//        return $this->username;
+//    }
+//
+//    /**
+//     * @param string|null $username
+//     */
+//    public function setUsername(?string $username): void
+//    {
+//        $this->username = $username;
+//    }
 }
