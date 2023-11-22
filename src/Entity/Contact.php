@@ -8,12 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\UuidV7 as Uuid;
-use ApiPlatform\Core\Annotation\ApiResource;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
-/**
- * @ApiResource()
- */
 class Contact
 {
     #[ORM\Id]
@@ -106,7 +102,7 @@ class Contact
 
     public function setId(string $uuid): void
     {
-        $this->id = UuidV6::fromString($uuid);
+        $this->id = Uuid::fromString($uuid);
     }
 
     public function getFirstName(): ?string
