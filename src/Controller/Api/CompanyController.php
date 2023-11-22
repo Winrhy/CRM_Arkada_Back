@@ -152,7 +152,16 @@ class CompanyController extends AbstractController
      */
     #[Route('/{id}', name: 'company_delete', methods: ['DELETE'])]
     public function delete(Company $company, EntityManagerInterface $entityManager): JsonResponse {
-        // La logique de suppression d'une entreprise
+        {
+            if (!$company) {
+                return $this->json(['error' => 'Company not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            $entityManager->remove($company);
+            $entityManager->flush();
+
+            return $this->json(['message' => 'Company deleted successfully'], JsonResponse::HTTP_OK);
+        }
     }
 
 
