@@ -107,7 +107,36 @@ class CompanyController extends AbstractController
      */
     #[Route('/{id}', name: 'company_update', methods: ['PUT'])]
     public function update(Request $request, Company $company, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse {
-        // La logique de mise à jour d'une entreprise spécifique
+        {
+            if (!$company) {
+                return $this->json(['error' => 'Company not found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            $companyData = $request->getContent();
+
+            try {
+                // Deserialize the data into the existing Company object
+                $serializer->deserialize($companyData, Company::class, 'json', ['object_to_populate' => $company]);
+            } catch (\Exception $e) {
+                // Handle deserialization errors
+                return $this->json(['error' => 'Invalid JSON: ' . $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            $errors = $validator->validate($company);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+                return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            $company->setModifiedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            return $this->json(['message' => 'Company updated successfully', 'company' => $company]);
+        }
     }
 
 
