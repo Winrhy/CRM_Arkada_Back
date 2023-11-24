@@ -7,7 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Uid\UuidV7 as Uuid;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 class Contact
@@ -19,6 +20,7 @@ class Contact
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['get_user'])]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 255)]
@@ -28,6 +30,7 @@ class Contact
     private ?\DateTimeInterface $birthdate = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['get_user'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]

@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Symfony\Component\Uid\UuidV7 as Uuid;
 
 #[ORM\Entity(repositoryClass: MailTemplateRepository::class)]
 class MailTemplate
@@ -27,6 +27,7 @@ class MailTemplate
     #[ORM\Column(length: 255)]
     private ?string $sender_mail = null;
 
+    #[ORM\Lazy]
     #[ORM\ManyToOne(inversedBy: 'mailTemplates')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user_id = null;
@@ -36,6 +37,9 @@ class MailTemplate
 
     #[ORM\OneToMany(mappedBy: 'template_id', targetEntity: AttachmentTemplateMailAssociation::class)]
     private Collection $attachmentTemplateMailAssociations;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $template_name = null;
 
     public function __construct()
     {
@@ -152,6 +156,18 @@ class MailTemplate
                 $attachmentTemplateMailAssociation->setTemplateId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTemplateName(): ?string
+    {
+        return $this->template_name;
+    }
+
+    public function setTemplateName(?string $template_name): static
+    {
+        $this->template_name = $template_name;
 
         return $this;
     }

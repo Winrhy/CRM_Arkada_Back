@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Contact;
 use App\Entity\Mail;
 use App\Entity\MailTemplate;
 use App\Entity\User;
+use App\Repository\ContactRepository;
 use App\Repository\MailRepository;
 use App\Repository\MailTemplateRepository;
 use App\Repository\UserRepository;
@@ -18,7 +20,8 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Finder\Finder;
-
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+use Symfony\Component\Serializer\SerializerInterface;
 
 
 #[Route('/mail', name: 'app_mail')]
@@ -66,7 +69,6 @@ class MailingController extends AbstractController
     #[Route('/create', name: 'app_mail_create')]
     public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, MailRepository $mailRepository): JsonResponse
     {
-        $emails=$mailRepository->findAll();
         $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
         $data = json_decode($request->getContent(), true);
         $from = $data['from'];
@@ -101,11 +103,54 @@ class MailingController extends AbstractController
         );
         return $this->json($response);
     }
+    #[Route('/create-template', name: 'app_mail_create_template')]
+    public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository): JsonResponse
+    {
+        $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
+        $data = json_decode($request->getContent(), true);
+        $subject = $data['subject'] ?? 'Arkada Studio';
+        $body = $data['body'] ?? '';
+        $from = $data['from'] ?? 'arkada@gmail.com';
+        $template = $data['template'] ?? 'signup.html.twig';
+
+        $email = new MailTemplate();
+        $email->setSubject($subject);
+        $email->setBody($body);
+        $email->setUserId($user);
+        $email->setSenderMail($from);
+        $email->setTemplateName($template);
+        $em->persist($email);
+        $em->flush();
+
+        $response = [
+            'status' => 'success',
+            'message' => 'Modèle d\'e-mail créé avec succès'
+        ];
+        return $this->json($response);
+    }
+    #[Route('/send-template/{template_id}', name: 'app_mail_send_template')]
+    public function sendTemplate($template_id, MailTemplateRepository $mailTemplateRepository, EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, ContactRepository $contactRepository, SerializerInterface $serializer): JsonResponse
+    {
+        $template = $mailTemplateRepository->findOneBy(['id'=>$template_id]);
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('get_user')
+            ->toArray();
+        $json = $serializer->serialize($template, 'json', $context);
+
+        $response = [
+            'status' => 'success',
+            'message' => 'Modèle d\'e-mail créé avec succès',
+        ];
+
+        return $this->json($json);
+    }
 
 
     #[Route('/single', name: 'app_mail_single')]
-    public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em): JsonResponse
+    public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em, MailRepository $mailRepository): JsonResponse
     {
+        $emal = $mailRepository->findOneBy(['id'=>"018bf611-344a-7d18-af75-12bcfba983f0"]);
+        return $this->json([$emal]);
 //        $data = json_decode($request->getContent(), true);
 //        $id = $data['id'];
 //
@@ -115,22 +160,23 @@ class MailingController extends AbstractController
 //        }
 //        return $this->json([$template]);
 
-        $user = new User();
-        $user->setEmail('test');
-        $user->setFirstName('paul');
-        $user->setLastName('delamare');
-        $user->setCreatedAt(new \DateTimeImmutable());
-        $user->setRoles(['ROLE_USER']);
-        $user->setJwtToken('bedhgfyuefbeyhufbguye');
+//        $user = new User();
+//        $user->setEmail('test');
+//        $user->setFirstName('paul');
+//        $user->setLastName('delamare');
+//        $user->setCreatedAt(new \DateTimeImmutable());
+//        $user->setRoles(['ROLE_USER']);
+//        $user->setJwtToken('bedhgfyuefbeyhufbguye');
+//
+//        // Générer un mot de passe aléatoire et l'encoder
+//        $plainPassword = 'paul1234';
+//        $user->setPassword($plainPassword);
+//
+//        // Persistez l'utilisateur en base de données
+//        $em->persist($user);
+//        $em->flush();
 
-        // Générer un mot de passe aléatoire et l'encoder
-        $plainPassword = 'paul1234';
-        $user->setPassword($plainPassword);
-
-        // Persistez l'utilisateur en base de données
-        $em->persist($user);
-        $em->flush();
-
-        return $this->json("Faux utilisateur créé avec succès !");
+//        return $this->json("Faux utilisateur créé avec succès !");
     }
+
 }
