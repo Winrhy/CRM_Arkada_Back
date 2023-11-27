@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mime\Email;
@@ -103,46 +104,19 @@ class MailingController extends AbstractController
         );
         return $this->json($response);
     }
-    #[Route('/create-template', name: 'app_mail_create_template')]
-    public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository): JsonResponse
-    {
-        $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
-        $data = json_decode($request->getContent(), true);
-        $subject = $data['subject'] ?? 'Arkada Studio';
-        $body = $data['body'] ?? '';
-        $from = $data['from'] ?? 'arkada@gmail.com';
-        $template = $data['template'] ?? 'signup.html.twig';
-
-        $email = new MailTemplate();
-        $email->setSubject($subject);
-        $email->setBody($body);
-        $email->setUserId($user);
-        $email->setSenderMail($from);
-        $email->setTemplateName($template);
-        $em->persist($email);
-        $em->flush();
-
-        $response = [
-            'status' => 'success',
-            'message' => 'Modèle d\'e-mail créé avec succès'
-        ];
-        return $this->json($response);
-    }
     #[Route('/send-template/{template_id}', name: 'app_mail_send_template')]
-    public function sendTemplate($template_id, MailTemplateRepository $mailTemplateRepository, EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, ContactRepository $contactRepository, SerializerInterface $serializer): JsonResponse
+    public function sendTemplate($template_id, MailTemplateRepository $mailTemplateRepository, EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, ContactRepository $contactRepository, SerializerInterface $serializer):JsonResponse
     {
         $template = $mailTemplateRepository->findOneBy(['id'=>$template_id]);
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('get_user')
-            ->toArray();
-        $json = $serializer->serialize($template, 'json', $context);
+
+//        var_dump($template);
 
         $response = [
             'status' => 'success',
             'message' => 'Modèle d\'e-mail créé avec succès',
         ];
 
-        return $this->json($json);
+        return $this->json($template->getBody());
     }
 
 
