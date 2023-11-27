@@ -9,7 +9,7 @@
     </style>
     <div class="example-wrapper">
         <img src="http://localhost:8000{{ path('tracking_pixel', {'email_id': email_id}) }}" alt="" style="width: 1px; height: 1px; display: none;">
-        <h1>Hello {{ username }}!✅</h1>
+        <h1 style="color: green">Hello {{ username }}!✅</h1>
         <div>
             {% if body is not empty %}
                 <p>{{ body }}</p>
