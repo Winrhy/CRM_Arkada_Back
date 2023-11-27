@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\UuidV7 as Uuid;
 
 #[ORM\Entity(repositoryClass: MailTemplateRepository::class)]
@@ -27,7 +28,6 @@ class MailTemplate
     #[ORM\Column(length: 255)]
     private ?string $sender_mail = null;
 
-    #[ORM\Lazy]
     #[ORM\ManyToOne(inversedBy: 'mailTemplates')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user_id = null;
