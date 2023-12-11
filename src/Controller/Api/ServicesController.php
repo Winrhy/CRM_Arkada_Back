@@ -11,8 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ServicesController extends AbstractController
 {
-    private string $defaultCountry = 'USA';
-
     #[Route('/filter', name: 'contact_filter', methods: ['GET'])]
     public function filter(Request $request, ContactRepository $repository): JsonResponse
     {
@@ -21,15 +19,6 @@ class ServicesController extends AbstractController
         $allowedCriteria = $this->getAllowedFilterCriteria();
 
         $validFilterCriteria = array_intersect_key($filterCriteria, array_flip($allowedCriteria));
-
-        $customCriteria = 'country';
-        if (isset($validFilterCriteria[$customCriteria]) && $validFilterCriteria[$customCriteria] !== $this->defaultCountry) {
-            return $this->json([]);
-        }
-
-        if (!isset($validFilterCriteria[$customCriteria])) {
-            $validFilterCriteria[$customCriteria] = $this->defaultCountry;
-        }
 
         try {
             $filteredContacts = $repository->findBy($validFilterCriteria);
