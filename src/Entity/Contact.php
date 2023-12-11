@@ -8,6 +8,22 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\UuidV7 as Uuid;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use App\Controller\Api\ContactController;
+
+#[ApiResource(operations: [
+    new Get(controller: ContactController::class),
+    new Post(controller: ContactController::class),
+    new Post(controller: ContactController::class),
+    new Put(controller: ContactController::class),
+    new Delete(controller: ContactController::class),
+    new GetCollection(controller: ContactController::class)
+])]
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 class Contact

@@ -23,6 +23,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\SerializerInterface;
+use ApiPlatform\Core\Annotation\ApiProperty;
 
 
 #[Route('/mail', name: 'app_mail')]
