@@ -5,7 +5,22 @@ namespace App\Entity;
 use App\Repository\DbLogsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Symfony\Component\Uid\UuidV7 as Uuid;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+
+#[ApiResource(operations: [
+    new Get(),
+    new Post(),
+    new Post(),
+    new Put(),
+    new Delete(),
+    new GetCollection()
+])]
 
 #[ORM\Entity(repositoryClass: DbLogsRepository::class)]
 class DbLogs

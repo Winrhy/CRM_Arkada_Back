@@ -9,9 +9,36 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\UuidV7 as Uuid;
+use ApiPlatform\Core\Annotation\ApiResource;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[ApiResource(
+    collectionOperations: [
+        'post' => [
+            'method' => 'POST',
+            'path' => '/users',
+        ],
+        'register' => [
+            'method' => 'POST',
+            'path' => '/users/register',
+            'controller' => UserController::class . '::register',
+            'description' => 'Register a new user',
+            // other necessary configurations
+        ],
+        // other collection operations
+    ],
+    itemOperations: [
+        'get' => [
+        ],
+        'login_check' => [
+            'method' => 'POST',
+            'path' => '/users/login',
+            'controller' => UserController::class . '::loginCheck',
+            'description' => 'User login',
+        ],
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
