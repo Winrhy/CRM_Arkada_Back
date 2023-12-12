@@ -41,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $last_action = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $jwt_token = null;
 
 //    #[ORM\Column(length: 255)]
