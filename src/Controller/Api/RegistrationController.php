@@ -25,6 +25,17 @@ class RegistrationController extends AbstractController
     }
 
 
+    /**
+     * Handles the user registration process.
+     *
+     * Accepts a POST request with user credentials, creates a new User entity, hashes the password,
+     * and saves the new user to the database. Returns a JSON response with registration details.
+     *
+     * @param EntityManagerInterface $em The entity manager interface for database interaction.
+     * @param Request $request The HTTP request object, containing user data.
+     * @param UserPasswordHasherInterface $passwordHasher The hasher interface for user passwords.
+     * @return JsonResponse Returns a JSON response containing a success message and user data.
+     */
     #[Route('/register', name: 'app_register', methods: ['POST'])]
     public function register(EntityManagerInterface $em, Request $request,
     UserPasswordHasherInterface $passwordHasher): JsonResponse
