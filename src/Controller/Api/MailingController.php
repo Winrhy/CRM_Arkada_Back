@@ -2,28 +2,21 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Contact;
-use App\Entity\Mail;
-use App\Entity\MailTemplate;
-use App\Entity\User;
-use App\Repository\ContactRepository;
-use App\Repository\MailRepository;
-use App\Repository\MailTemplateRepository;
-use App\Repository\UserRepository;
+namespace App\Controller\Api;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Mime\Email;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
-use Symfony\Component\Serializer\SerializerInterface;
-use ApiPlatform\Core\Annotation\ApiProperty;
+use App\Repository\UserRepository;
+use App\Repository\MailRepository;
+use App\Repository\MailTemplateRepository;
+use App\Entity\Mail;
 
 
 #[Route('/mail', name: 'app_mail')]
@@ -149,7 +142,6 @@ class MailingController extends AbstractController
     {
         $template = $mailTemplateRepository->findOneBy(['id'=>$template_id]);
 
-//        var_dump($template);
         $response = [
             'status' => 'success',
             'message' => 'Modèle d\'e-mail créé avec succès',
@@ -157,6 +149,7 @@ class MailingController extends AbstractController
 
         return $this->json($template->getBody());
     }
+
 
     /**
      * Fetches a single email entity based on a given ID and returns its details.
@@ -170,34 +163,7 @@ class MailingController extends AbstractController
     #[Route('/single', name: 'app_mail_single')]
     public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em, MailRepository $mailRepository): JsonResponse
     {
-        $emal = $mailRepository->findOneBy(['id'=>"018bf611-344a-7d18-af75-12bcfba983f0"]);
-        return $this->json([$emal]);
-//        $data = json_decode($request->getContent(), true);
-//        $id = $data['id'];
-//
-//        $template = $rep->findOneBy(['id'=>$id]);
-//        if (!$template) {
-//            return $this->json(['error' => 'Email not found'], 404);
-//        }
-//        return $this->json([$template]);
-
-//        $user = new User();
-//        $user->setEmail('test');
-//        $user->setFirstName('paul');
-//        $user->setLastName('delamare');
-//        $user->setCreatedAt(new \DateTimeImmutable());
-//        $user->setRoles(['ROLE_USER']);
-//        $user->setJwtToken('bedhgfyuefbeyhufbguye');
-//
-//        // Générer un mot de passe aléatoire et l'encoder
-//        $plainPassword = 'paul1234';
-//        $user->setPassword($plainPassword);
-//
-//        // Persistez l'utilisateur en base de données
-//        $em->persist($user);
-//        $em->flush();
-
-//        return $this->json("Faux utilisateur créé avec succès !");
+        $email = $mailRepository->findOneBy(['id'=>"018bf611-344a-7d18-af75-12bcfba983f0"]);
+        return $this->json([$email]);
     }
-
 }
