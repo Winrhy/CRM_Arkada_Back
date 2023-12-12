@@ -7,7 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Uid\UuidV7 as Uuid;
 
 #[ORM\Entity(repositoryClass: MailTemplateRepository::class)]
 class MailTemplate
@@ -36,6 +37,12 @@ class MailTemplate
 
     #[ORM\OneToMany(mappedBy: 'template_id', targetEntity: AttachmentTemplateMailAssociation::class)]
     private Collection $attachmentTemplateMailAssociations;
+
+    #[ORM\Column(length: 255)]
+    private ?string $templateName = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
 
     public function __construct()
     {
@@ -84,9 +91,10 @@ class MailTemplate
         return $this;
     }
 
-    public function getUserId(): ?User
+    //CIRCULAR PREVENTION REFERENCE
+    public function getUserId(): ?Uuid
     {
-        return $this->user_id;
+        return $this->user_id ? $this->user_id->getId() : null;
     }
 
     public function setUserId(?User $user_id): static
@@ -152,6 +160,30 @@ class MailTemplate
                 $attachmentTemplateMailAssociation->setTemplateId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTemplateName(): ?string
+    {
+        return $this->templateName;
+    }
+
+    public function setTemplateName(string $templateName): static
+    {
+        $this->templateName = $templateName;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
 
         return $this;
     }
