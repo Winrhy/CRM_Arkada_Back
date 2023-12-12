@@ -8,10 +8,44 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\UuidV7 as Uuid;
+use Symfony\Component\Routing\Annotation\Route;
+use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\MailingController;
 
 #[ORM\Entity(repositoryClass: MailRepository::class)]
-class Mail
-{
+#[ApiResource(
+    collectionOperations: [
+        'create_email' => [
+            'method' => 'POST',
+            'path' => '/mail/create',
+            'controller' => MailingController::class,
+            'description' => 'Create a new email',
+            // ... other settings like serialization groups
+        ],
+        'send_template' => [
+            'method' => 'POST',
+            'path' => '/mail/send-template/{template_id}',
+            'controller' => MailingController::class,
+            // ... other settings
+        ],
+        // ... other operations
+    ],
+    itemOperations: [
+        'get' => [
+            'method' => 'GET',
+            'path' => '/mail/{id}',
+            // ... other settings
+        ],
+        'single_email' => [
+            'method' => 'GET',
+            'path' => '/mail/single',
+            'controller' => MailingController::class,
+            // ... other settings
+        ],
+        // ... other item operations
+    ]
+)]
+class Mail{
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]

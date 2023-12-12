@@ -7,7 +7,21 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\UuidV6 as Uuid;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use App\Controller\Api\CampaignController;
 
+#[ApiResource(operations: [
+    new Get(controller: CampaignController::class),
+    new Post(controller: CampaignController::class),
+    new Put(controller: CampaignController::class),
+    new Delete(controller: CampaignController::class),
+    new GetCollection(controller: CampaignController::class)
+])]
 
 #[ORM\Entity(repositoryClass: CampaignRepository::class)]
 class Campaign
