@@ -1,0 +1,9 @@
+{% include 'email/layout/header.html.twig' %}
+
+{% if email_id is defined %}
+    <img src="http://localhost:8000{{ path('tracking_pixel', {'email_id': email_id}) }}" alt="" style="width: 1px; height: 1px; display: none;">
+{% endif %}
+<h3> Hey ! {{ username }}</h3>
+<p>{{ body }}</p>
+
+{% include 'email/layout/footer.html.twig' %}
