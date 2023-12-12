@@ -14,14 +14,20 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class RegistrationController extends AbstractController
 {
-
+    /**
+     * Constructor for RegistrationController.
+     *
+     * @param JWTTokenManagerInterface $jwtManager The JWT token manager service.
+     */
     public function __construct(JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
     }
 
+
     #[Route('/register', name: 'app_register', methods: ['POST'])]
-    public function register(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function register(EntityManagerInterface $em, Request $request,
+    UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
 
         $decoder = json_decode($request->getContent());
@@ -47,6 +53,7 @@ class RegistrationController extends AbstractController
             'user' => $user,
         ]);
     }
+
 
     #[Route('/users', name: 'app_users', methods: ['GET'])]
     public function getAllUsers(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
