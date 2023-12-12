@@ -66,6 +66,17 @@ class RegistrationController extends AbstractController
     }
 
 
+    /**
+     * Retrieves and returns all users.
+     *
+     * Handles a GET request to fetch all users from the database.
+     * Returns a JSON response with the list of users.
+     *
+     * @param EntityManagerInterface $em The entity manager interface for database interaction.
+     * @param Request $request The HTTP request object.
+     * @param UserPasswordHasherInterface $passwordHasher The hasher interface for user passwords.
+     * @return JsonResponse Returns a JSON response containing the list of all users.
+     */
     #[Route('/users', name: 'app_users', methods: ['GET'])]
     public function getAllUsers(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
