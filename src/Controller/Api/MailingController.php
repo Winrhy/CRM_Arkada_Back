@@ -150,7 +150,6 @@ class MailingController extends AbstractController
         $template = $mailTemplateRepository->findOneBy(['id'=>$template_id]);
 
 //        var_dump($template);
-
         $response = [
             'status' => 'success',
             'message' => 'Modèle d\'e-mail créé avec succès',
@@ -159,7 +158,15 @@ class MailingController extends AbstractController
         return $this->json($template->getBody());
     }
 
-
+    /**
+     * Fetches a single email entity based on a given ID and returns its details.
+     *
+     * @param Request $request HTTP request containing the email ID.
+     * @param MailTemplateRepository $rep Repository for mail template.
+     * @param EntityManagerInterface $em Entity Manager for database interactions.
+     * @param MailRepository $mailRepository Repository for mail entity.
+     * @return JsonResponse Returns a JSON response with email details or an error message.
+     */
     #[Route('/single', name: 'app_mail_single')]
     public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em, MailRepository $mailRepository): JsonResponse
     {
