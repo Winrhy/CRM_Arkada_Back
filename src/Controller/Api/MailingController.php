@@ -81,6 +81,16 @@ class MailingController extends AbstractController
         }
     }
 
+    /**
+     * Creates and sends an email from a user-defined payload.
+     *
+     * @param EntityManagerInterface $em Entity Manager for database interactions.
+     * @param Request $request The HTTP request object containing email data.
+     * @param MailerInterface $mailer Mailer service for sending emails.
+     * @param UserRepository $userRepository Repository for user entity.
+     * @param MailRepository $mailRepository Repository for mail entity.
+     * @return JsonResponse Returns a JSON response after creating and sending the email.
+     */
     #[Route('/create', name: 'app_mail_create')]
     public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, MailRepository $mailRepository): JsonResponse
     {
