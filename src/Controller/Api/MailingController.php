@@ -29,6 +29,19 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 #[Route('/mail', name: 'app_mail')]
 class MailingController extends AbstractController
 {
+    /**
+     * Sends an email using a specified template.
+     *
+     * @param MailerInterface $mailer The Mailer interface to send emails.
+     * @param string $emailId Unique identifier of the email.
+     * @param string $from Sender's email address.
+     * @param string $to Recipient's email address.
+     * @param string $subject Subject of the email.
+     * @param string $template Name of the email template to be used.
+     * @param string $name Name of the user the email is intended for.
+     * @param string $body Body of the email (optional).
+     * @return JsonResponse Returns a JSON response indicating success or failure of the email sending process.
+     */
     private function sendEmail(MailerInterface $mailer,string $emailId, string $from, string $to, string $subject, string $template, string $name, string $body =''): JsonResponse
     {
         $templateDir = $this->getParameter('kernel.project_dir') . '/templates/email';
