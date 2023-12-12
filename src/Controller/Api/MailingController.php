@@ -81,6 +81,7 @@ class MailingController extends AbstractController
         }
     }
 
+
     /**
      * Creates and sends an email from a user-defined payload.
      *
@@ -128,6 +129,21 @@ class MailingController extends AbstractController
         );
         return $this->json($response);
     }
+
+
+    /**
+     * Sends an email using a predefined template from the database.
+     *
+     * @param mixed $template_id The ID of the email template.
+     * @param MailTemplateRepository $mailTemplateRepository Repository for mail template entity.
+     * @param EntityManagerInterface $em Entity Manager for database operations.
+     * @param Request $request HTTP request object.
+     * @param MailerInterface $mailer Mailer service for email transmission.
+     * @param UserRepository $userRepository Repository for user entity.
+     * @param ContactRepository $contactRepository Repository for contact entity.
+     * @param SerializerInterface $serializer Service for data serialization.
+     * @return JsonResponse Returns a JSON response with the email template body or error message.
+     */
     #[Route('/send-template/{template_id}', name: 'app_mail_send_template')]
     public function sendTemplate($template_id, MailTemplateRepository $mailTemplateRepository, EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, ContactRepository $contactRepository, SerializerInterface $serializer):JsonResponse
     {
