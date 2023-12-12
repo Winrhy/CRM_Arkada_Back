@@ -18,7 +18,6 @@ use ApiPlatform\Core\Annotation\ApiResource;
         'post' => [
             'method' => 'POST',
             'path' => '/users',
-            // standard API Platform operation for creating a user
         ],
         'register' => [
             'method' => 'POST',
@@ -31,16 +30,13 @@ use ApiPlatform\Core\Annotation\ApiResource;
     ],
     itemOperations: [
         'get' => [
-            // standard API Platform operation for retrieving a user
         ],
         'login_check' => [
             'method' => 'POST',
             'path' => '/users/login',
             'controller' => UserController::class . '::loginCheck',
             'description' => 'User login',
-            // other necessary configurations
         ],
-        // other item operations
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
