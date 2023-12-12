@@ -54,7 +54,6 @@ class MailingController extends AbstractController
         ;
         try {
             $mailer->send($email);
-
             return $this->json([
                 'message' => 'Email envoyé avec succès !',
             ]);
@@ -70,7 +69,7 @@ class MailingController extends AbstractController
     #[Route('/create', name: 'app_mail_create')]
     public function createEmail(EntityManagerInterface $em, Request $request,MailerInterface $mailer, UserRepository $userRepository, MailRepository $mailRepository): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id'=>"018c5863-bccc-7b2b-93a7-94f4ff365f87"]);
+        $user = $userRepository->findOneBy(['id'=>"018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         $data = json_decode($request->getContent(), true);
         $from = $data['from'];
         $to = $data['to'];
@@ -123,7 +122,7 @@ class MailingController extends AbstractController
     #[Route('/single', name: 'app_mail_single')]
     public function singleEmail(Request $request,MailTemplateRepository $rep, EntityManagerInterface $em, MailRepository $mailRepository): JsonResponse
     {
-        $emal = $mailRepository->findOneBy(['id'=>"018bf611-344a-7d18-af75-12bcfba983f0"]);
+        $emal = $mailRepository->findOneBy(['id'=>"018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         return $this->json([$emal]);
 //        $data = json_decode($request->getContent(), true);
 //        $id = $data['id'];
