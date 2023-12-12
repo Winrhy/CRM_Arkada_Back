@@ -89,14 +89,28 @@ class RegistrationController extends AbstractController
      * @return JsonResponse Returns a JSON response containing the list of all users.
      */
     #[Route('/users', name: 'app_users', methods: ['GET'])]
-    public function getAllUsers(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function getAllUsers(EntityManagerInterface $em, Request $request): JsonResponse
     {
+        try {
+            // Implementing basic pagination
+            $limit = $request->query->get('limit', 10);
+            $offset = $request->query->get('offset', 0);
 
-        $users = $em->getRepository(User::class)->findAll();
+            $users = $em->getRepository(User::class)->findBy([], null, $limit, $offset);
 
-        return $this->json([
-            'users' => $users,
-        ]);
+            // Use a DTO or Serializer to control exposed user data
+            $userData = [];
+            foreach ($users as $user) {
+                $userData[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                ];
+            }
+
+            return $this->json(['users' => $userData]);
+        } catch (\Exception $e) {
+            // Handle any exceptions during the database operation
+            return $this->json(['message' => 'Error occurred while fetching users'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-
 }
