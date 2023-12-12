@@ -18,10 +18,9 @@ class TemplateEmailController extends AbstractController
 {
 
     #[Route('/templates', name: 'app_templates_index', methods: ['GET'])]
-    public function index(MailTemplateRepository $templateRepository): JsonResponse
+    public function index(MailTemplateRepository $templateRepository)
     {
         $templates = $templateRepository->findAll();
-
         return $this->json($templates);
     }
 
@@ -38,17 +37,16 @@ class TemplateEmailController extends AbstractController
             return new Response('', 404);
         }
         $html = $this->render('email/'.$template->getTemplateName(), [
-            'username' => 'John Doe',
-            'body' => 'Jane',
-            'email_id'=>'000'
+            'username' => 'Paul Posware',
+            'body' => $template->getBody(),
         ]);
-        return new Response($html);
+        return $html;
     }
 
     #[Route('/create', name: 'app_template_create', methods: ['POST'])]
     public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
+        $user = $userRepository->findOneBy(['id'=>"018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         $data = json_decode($request->getContent(), true);
         $subject = $data['subject'] ?? 'Arkada Studio';
         $body = $data['body'] ?? '';
@@ -61,6 +59,7 @@ class TemplateEmailController extends AbstractController
         $email->setUserId($user);
         $email->setSenderMail($from);
         $email->setTemplateName($template);
+        $email->setName('Exemple 2');
         $em->persist($email);
         $em->flush();
 
@@ -74,7 +73,7 @@ class TemplateEmailController extends AbstractController
     #[Route('/update/{id}', name: 'app_template_update', methods: ['PUT'])]
     public function updateTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository,string $id, MailTemplateRepository $templateRepository): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id' => "018bf293-b164-7c7b-affe-1c05d452ac6e"]);
+        $user = $userRepository->findOneBy(['id' => "018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         $data = json_decode($request->getContent(), true);
         $subject = $data['subject'] ?? 'Arkada Studio';
         $body = $data['body'] ?? '';
@@ -102,7 +101,7 @@ class TemplateEmailController extends AbstractController
     #[Route('/delete/{id}', name: 'app_template_delete', methods: ['DELETE', 'GET'])]
     public function deleteTemplate(EntityManagerInterface $em, MailTemplateRepository $templateRepository, UserRepository $userRepository, string $id): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id' => "018bf293-b164-7c7b-affe-1c05d452ac6e"]);
+        $user = $userRepository->findOneBy(['id' => "018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
 
         if (!$this->getUser() || !$this->getUser()->isGranted('ROLE_ADMIN')) {
             return $this->json(['status' => 'error', 'message' => 'Vous n\'avez pas les droits pour supprimer ce modèle'], 403);
