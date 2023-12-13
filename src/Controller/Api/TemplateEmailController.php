@@ -26,6 +26,26 @@ class TemplateEmailController extends AbstractController
         $templates = $templateRepository->findAll();
         return $this->json($templates);
     }
+    #[Route('/get/{id}', name: 'app_templates_get_update', methods: ['GET'])]
+    public function getOneTemplate(MailTemplateRepository $templateRepository, string $id)
+    {
+        try {
+            $template = $templateRepository->findOneBy(['id' => $id]);
+
+            if (!$template) {
+                throw new \Exception("Template not found with ID: $id", JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($template);
+        } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
+            $errorResponse = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            return $this->json($errorResponse, $statusCode);
+        }
+    }
 
     #[Route('/single/{id}', name: 'app_templates_show', methods: ['GET'])]
     public function show(MailTemplateRepository $templateRepository, string $id):Response
@@ -52,7 +72,7 @@ class TemplateEmailController extends AbstractController
         try {
             $token = $request->headers->get('Authorization');
             $jwtToken = str_replace('Bearer ', '', $token);
-            $user = $userRepository->findOneBy(['jwt_token' => $jwtToken]);
+            $user = $userRepository->findOneBy(['id' => '018c5a9f-15ea-7721-8139-0f8bc952c2a5']);
             $data = json_decode($request->getContent(), true);
             $name = $data['name'];
             $subject = $data['subject'] ;
@@ -102,10 +122,12 @@ class TemplateEmailController extends AbstractController
     {
         $user = $userRepository->findOneBy(['id' => "018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         $data = json_decode($request->getContent(), true);
-        $subject = $data['subject'] ?? 'Arkada Studio';
-        $body = $data['body'] ?? '';
+        $subject = $data['subject'];
+        $name = $data['name'];
+        $body = $data['body'];
         $from = $data['from'] ?? 'arkada@gmail.com';
-        $template = $data['template'] ?? 'signup.html.twig';
+        $template = $data['design'];
+        $template .= '.html.twig';
 
         $templateUpdate = $templateRepository->findOneBy(['id'=>$id]);
         if (!$templateUpdate) {
@@ -113,6 +135,7 @@ class TemplateEmailController extends AbstractController
         }
 
         $templateUpdate->setSubject($subject);
+        $templateUpdate->setName($name);
         $templateUpdate->setBody($body);
         $templateUpdate->setUserId($user);
         $templateUpdate->setSenderMail($from);
