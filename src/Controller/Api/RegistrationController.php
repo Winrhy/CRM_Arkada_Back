@@ -75,6 +75,16 @@ class RegistrationController extends AbstractController
         ]);
     }
 
+    #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['POST'])]
+    public function resetPassword(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+
+        return $this->json([
+            'message' => 'Registration for the Arkada CRM successful',
+            'success' => true,
+        ]);
+    }
+
 
     /**
      * Retrieves and returns all users.
