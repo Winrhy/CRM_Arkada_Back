@@ -3,6 +3,10 @@
 namespace App\DTO;
 
 use App\Entity\Company;
+use App\Form\CompanyType;
+use App\Service\CompanyService;
+
+
 
 class CompanyDTO
 {

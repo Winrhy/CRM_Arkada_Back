@@ -2,7 +2,7 @@
 
 // src/Form/CompanyType.php
 
-namespace App\Form;
+namespace App\Form\Type;
 
 use App\Entity\Company;
 use Symfony\Component\Form\AbstractType;

@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Service\CompanyService;
+use App\DTO\CompanyDTO;
 
 #[Route('/company')]
 class CompanyController extends AbstractController

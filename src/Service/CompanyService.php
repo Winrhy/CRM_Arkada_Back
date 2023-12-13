@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\Company;
+use App\Form\CompanyType;
+use App\DTO\CompanyDTO;
 use App\Repository\CompanyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
