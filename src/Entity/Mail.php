@@ -20,29 +20,23 @@ use App\Controller\MailingController;
             'path' => '/mail/create',
             'controller' => MailingController::class,
             'description' => 'Create a new email',
-            // ... other settings like serialization groups
         ],
         'send_template' => [
             'method' => 'POST',
             'path' => '/mail/send-template/{template_id}',
             'controller' => MailingController::class,
-            // ... other settings
         ],
-        // ... other operations
     ],
     itemOperations: [
         'get' => [
             'method' => 'GET',
             'path' => '/mail/{id}',
-            // ... other settings
         ],
         'single_email' => [
             'method' => 'GET',
             'path' => '/mail/single',
             'controller' => MailingController::class,
-            // ... other settings
         ],
-        // ... other item operations
     ]
 )]
 class Mail{

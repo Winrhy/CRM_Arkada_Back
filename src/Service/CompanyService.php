@@ -21,14 +21,12 @@ class CompanyService
 
     public function createCompany(Company $company): void
     {
-        // Vous pouvez ajouter ici de la logique supplémentaire avant la persistance
         $this->entityManager->persist($company);
         $this->entityManager->flush();
     }
 
     public function updateCompany(Company $company): void
     {
-        // La mise à jour est généralement gérée automatiquement, mais vous pouvez ajouter de la logique ici si nécessaire
         $this->entityManager->flush();
     }
 
