@@ -14,13 +14,6 @@ use Symfony\Component\Uid\Uuid;
 
 class UserController extends AbstractController
 {
-    #[Route('/user', name: 'app_user')]
-    public function index(): Response
-    {
-        return $this->render('user/index.html.twig', [
-            'controller_name' => 'UserController',
-        ]);
-    }
 
     #[Route('/users', name: 'app_users', methods: ['GET'])]
     public function getAllUsers(EntityManagerInterface $em): JsonResponse
@@ -33,14 +26,20 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/user', name: 'app_user', methods: ['POST'])]
-    public function getOneUserById(EntityManagerInterface $em, Request $request): JsonResponse
+    #[Route('/user/{id}', name: 'app_user', methods: ['GET'])]
+    public function getOneUserById($id,EntityManagerInterface $em): JsonResponse
     {
-        $decoder = json_decode($request->getContent());
-        $user = $em->getRepository(User::class)->findBy(["email" => $decoder->email]);
+
+        $userDatabase = $em->getRepository(User::class)->find($id);
+
+        $userWeb = new User();
+        $userWeb->setFirstName($userDatabase->getFirstName());
+        $userWeb->setLastName($userDatabase->getLastName());
+        $userWeb->setEmail($userDatabase->getEmail());
+        $userWeb->setCreatedAt($userDatabase->getCreatedAt());
 
         return $this->json([
-            'user' => $user,
+            'user' => $userWeb,
         ]);
     }
 }
