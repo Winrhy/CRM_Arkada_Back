@@ -50,6 +50,7 @@ class MaillingService
                         'password'=>$emailDTO->password,
                         'last_name'=>$emailDTO->last_name,
                         'from'=>$emailDTO->from,
+                        'to'=>$emailDTO->to,
                     ]);
 
                 try {
