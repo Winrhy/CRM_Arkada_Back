@@ -86,7 +86,11 @@ class ContactService
         $contacts = $this->contactRepository->findAll();
         $emailList = [];
         foreach ($contacts as $contact) {
-            $emailList[] = $contact->getEmail();
+            $emailList[] = [
+                'email' => $contact->getEmail(),
+                'firstname' => $contact->getFirstname(),
+                'lastname' => $contact->getLastname(),
+            ];
         }
         return $emailList;
     }
