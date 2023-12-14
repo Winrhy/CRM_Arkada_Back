@@ -28,4 +28,19 @@ class SegmentController extends AbstractController
         $this->segmentService = $segmentService;
     }
 
+    /**
+     * Creates a new Segment entity from the request data.
+     *
+     * @Route("/", name="create_segment", methods={"POST"})
+     * @param Request $request The HTTP request.
+     * @return Response The HTTP response.
+     */
+    public function createSegment(Request $request): Response
+    {
+        $segmentDTO = $this->jsonToObject($request->getContent(), SegmentDTO::class);
+        $segment = $this->segmentService->createSegment($segmentDTO);
+        return $this->json($segment, Response::HTTP_CREATED);
+    }
+
+
 }
