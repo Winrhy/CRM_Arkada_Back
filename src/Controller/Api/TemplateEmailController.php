@@ -159,10 +159,6 @@ class TemplateEmailController extends AbstractController
     #[Route('/delete/{id}', name: 'app_template_delete', methods: ['DELETE', 'GET'])]
     public function deleteTemplate(EntityManagerInterface $em, MailTemplateRepository $templateRepository, UserRepository $userRepository, string $id): JsonResponse
     {
-//        if (!$this->getUser() || !$this->getUser()->isGranted('ROLE_ADMIN')) {
-//            return $this->json(['status' => 'error', 'message' => 'Vous n\'avez pas les droits pour supprimer ce modèle'], 403);
-//        }
-
         $template = $templateRepository->findOneBy(['id'=>$id]);
         if (!$template) {
             return $this->json(['status' => 'error', 'message' => 'Modèle d\'e-mail introuvable'], 404);
@@ -191,6 +187,27 @@ class TemplateEmailController extends AbstractController
             $designs[] = $nameWithoutExtension;
         }
         return $this->json($designs);
+    }
+
+    #[Route('/design/{name}', name: 'app_templates_single_design', methods: ['GET'])]
+    public function design( string $name):Response
+    {
+        $name .= ".html.twig";
+        $templateDir = $this->getParameter('kernel.project_dir') . '/templates/email';
+        $templateFile = $templateDir . '/' . $name;
+        if (!file_exists($templateFile)) {
+            return new Response('', 404);
+        }
+        $html = $this->render('email/'.$name, [
+            'username' => 'John',
+            'body' => "J'espère que ce message vous trouve en bonne santé. Cet email fait partie d'un processus de test et d'évaluation visant à garantir le bon fonctionnement de notre système de livraison d'e-mails. En tant qu'utilisateur précieux, votre participation à ce test est grandement appréciée. Soyez assuré(e) qu'il s'agit d'un test non intrusif et qu'aucune action n'est requise de votre part. Nous vérifions simplement la fiabilité et l'efficacité de notre infrastructure d'e-mails. Si vous avez des préoccupations ou si vous constatez des irrégularités lors de la réception de cet e-mail, n'hésitez pas à contacter notre équipe de support à l'adresse [votre_adresse_email_support@example.com]. Merci pour votre coopération et votre compréhension. Cordialement,",
+            'expiration_date' => new \DateTime('+7 days'),
+            'password'=>'XXXXXXXX',
+            'last_name'=>'Doe',
+            'from'=>'arkada@gmail.com',
+            'to'=>'john@gmail.com'
+            ]);
+        return $html;
     }
 
 }
