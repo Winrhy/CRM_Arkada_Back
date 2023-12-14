@@ -79,4 +79,15 @@ class ContactService
     {
         return $this->contactRepository->findAll();
     }
+
+
+    public function getAllContactEmail() :array
+    {
+        $contacts = $this->contactRepository->findAll();
+        $emailList = [];
+        foreach ($contacts as $contact) {
+            $emailList[] = $contact->getEmail();
+        }
+        return $emailList;
+    }
 }
