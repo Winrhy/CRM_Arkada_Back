@@ -44,8 +44,12 @@ class MaillingService
                     ->htmlTemplate('email/' . $emailDTO->template)
                     ->context([
                         'expiration_date' => new \DateTime('+7 days'),
-                        'username' => $emailDTO->name,
                         'body' => $emailDTO->body,
+                        'email_id'=>$emailDTO->email_id,
+                        'username'=>$emailDTO->name,
+                        'password'=>$emailDTO->password,
+                        'last_name'=>$emailDTO->last_name,
+                        'from'=>$emailDTO->from,
                     ]);
 
                 try {
