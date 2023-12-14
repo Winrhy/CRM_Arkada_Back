@@ -42,7 +42,7 @@ class MailingController extends AbstractController
      *
      * @return JsonResponse Returns a JSON response after creating and sending the email.
      */
-    #[Route('/create', name: 'app_mail_create')]
+    #[Route('/create', name: 'app_mail_create', methods: ['POST'])]
     public function createEmail(Request $request, MaillingService $maillingService, EntityManagerInterface $entityManager,UserRepository $userRepository): JsonResponse {
         $emailData = json_decode($request->getContent(), true);
 
