@@ -65,7 +65,6 @@ class RegistrationController extends AbstractController
             $em->persist($user);
             $em->flush();
         } catch (\Exception $e) {
-            // Handle any exceptions during the database write operation
             return $this->json(['message' => 'Error occurred while registering user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 

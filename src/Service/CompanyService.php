@@ -21,10 +21,6 @@ class CompanyService
 
     public function createCompany(CompanyDTO $companyDTO): Company
     {
-        $company = new Company();
-        $companyDTO->mapToEntity($company);
-        $company->setCreatedAt(new \DateTimeImmutable());
-
         $this->entityManager->persist($company);
         $this->entityManager->flush();
 

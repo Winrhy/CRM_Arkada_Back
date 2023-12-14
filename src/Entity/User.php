@@ -24,9 +24,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
             'path' => '/users/register',
             'controller' => UserController::class . '::register',
             'description' => 'Register a new user',
-            // other necessary configurations
         ],
-        // other collection operations
     ],
     itemOperations: [
         'get' => [

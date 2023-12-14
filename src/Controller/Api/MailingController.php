@@ -4,10 +4,12 @@ namespace App\Controller\Api;
 
 use App\Service\MaillingService;
 use App\DTO\MaillingDTO;
+use App\Entity\Mail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/mail', name: 'app_mail')]
 class MailingController extends AbstractController
@@ -35,17 +37,11 @@ class MailingController extends AbstractController
      * @return JsonResponse Returns a JSON response after creating and sending the email.
      */
     #[Route('/create', name: 'app_mail_create')]
-    public function createEmail(Request $request, MaillingService $maillingService): JsonResponse
-    {
+    public function createEmail(Request $request, MaillingService $maillingService, EntityManagerInterface $entityManager): JsonResponse {
         $emailData = json_decode($request->getContent(), true);
 
         if ($emailData !== null) {
-
-            $maillingDTOs = [];
-
-            $toRecipients = $emailData['to'];
-            foreach ($toRecipients as $recipient) {
-                print('test');
+            foreach ($emailData['to'] as $recipient) {
                 $maillingDTO = new MaillingDTO();
                 $maillingDTO->from = $emailData['senderMail'];
                 $maillingDTO->to = $recipient;
@@ -53,17 +49,28 @@ class MailingController extends AbstractController
                 $maillingDTO->template = $emailData['templateName'] ?? 'default_template.html.twig';
 //                $maillingDTO->name = $emailData['name'] ?? 'Nom par défaut';
                 $maillingDTO->body = $emailData['body'] ?? 'Corps du message par défaut';
+
+                $mail = new Mail();
+                $mail->setSubject($maillingDTO->subject);
+                $mail->setBody($maillingDTO->body);
+                $mail->setTimestamp(new \DateTimeImmutable());
+                $mail->setSenderMail($maillingDTO->from);
+                $mail->setReceiver($maillingDTO->to);
+                $mail->setRead(false);
+
+                $entityManager->persist($mail);
+
                 $bulkEmailDTOs[] = $maillingDTO;
             }
 
-            // Envoie des emails en utilisant la méthode sendBulkEmails du service
+            $entityManager->flush();
+
             $maillingService->sendBulkEmails($bulkEmailDTOs);
 
             return $this->json([
                 'message' => 'Emails envoyés avec succès!',
             ]);
         } else {
-            // Gérer le cas où $emailData est null
             return $this->json([
                 'message' => 'Données JSON invalides dans la requête.',
             ], JsonResponse::HTTP_BAD_REQUEST);
