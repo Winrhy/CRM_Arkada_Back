@@ -16,9 +16,16 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 
+
 #[Route('/template', name: 'app_template_email')]
 class TemplateEmailController extends AbstractController
 {
+
+    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
+    {
+        $this->jwtManager = $jwtManager;
+        $this->tokenStorageInterface = $tokenStorageInterface;
+    }
 
     #[Route('/templates', name: 'app_templates_index', methods: ['GET'])]
     public function index(MailTemplateRepository $templateRepository)
@@ -70,9 +77,9 @@ class TemplateEmailController extends AbstractController
     public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorage): JsonResponse
     {
         try {
-            $token = $request->headers->get('Authorization');
-            $jwtToken = str_replace('Bearer ', '', $token);
-            $user = $userRepository->findOneBy(['id' => '018c5a9f-15ea-7721-8139-0f8bc952c2a5']);
+            $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+            $user = $userRepository->findOneBy(['email' => $decodedJwtToken['username']]);
+
             $data = json_decode($request->getContent(), true);
             $name = $data['name'];
             $subject = $data['subject'] ;
@@ -120,7 +127,8 @@ class TemplateEmailController extends AbstractController
     #[Route('/update/{id}', name: 'app_template_update', methods: ['PUT'])]
     public function updateTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository,string $id, MailTemplateRepository $templateRepository): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id' => "018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $userRepository->findOneBy(['email' => $decodedJwtToken['username']]);
         $data = json_decode($request->getContent(), true);
         $subject = $data['subject'];
         $name = $data['name'];
