@@ -12,17 +12,39 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+
 
 #[Route('/template', name: 'app_template_email')]
 class TemplateEmailController extends AbstractController
 {
 
     #[Route('/templates', name: 'app_templates_index', methods: ['GET'])]
-    public function index(MailTemplateRepository $templateRepository): JsonResponse
+    public function index(MailTemplateRepository $templateRepository)
     {
         $templates = $templateRepository->findAll();
-
         return $this->json($templates);
+    }
+    #[Route('/get/{id}', name: 'app_templates_get_update', methods: ['GET'])]
+    public function getOneTemplate(MailTemplateRepository $templateRepository, string $id)
+    {
+        try {
+            $template = $templateRepository->findOneBy(['id' => $id]);
+
+            if (!$template) {
+                throw new \Exception("Template not found with ID: $id", JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($template);
+        } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
+            $errorResponse = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            return $this->json($errorResponse, $statusCode);
+        }
     }
 
     #[Route('/single/{id}', name: 'app_templates_show', methods: ['GET'])]
@@ -38,48 +60,74 @@ class TemplateEmailController extends AbstractController
             return new Response('', 404);
         }
         $html = $this->render('email/'.$template->getTemplateName(), [
-            'username' => 'John Doe',
-            'body' => 'Jane',
-            'email_id'=>'000'
+            'username' => 'Paul Posware',
+            'body' => $template->getBody(),
         ]);
-        return new Response($html);
+        return $html;
     }
 
     #[Route('/create', name: 'app_template_create', methods: ['POST'])]
-    public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository): JsonResponse
+    public function createTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorage): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id'=>"018bf293-b164-7c7b-affe-1c05d452ac6e"]);
-        $data = json_decode($request->getContent(), true);
-        $subject = $data['subject'] ?? 'Arkada Studio';
-        $body = $data['body'] ?? '';
-        $from = $data['from'] ?? 'arkada@gmail.com';
-        $template = $data['template'] ?? 'signup.html.twig';
+        try {
+            $token = $request->headers->get('Authorization');
+            $jwtToken = str_replace('Bearer ', '', $token);
+            $user = $userRepository->findOneBy(['id' => '018c5a9f-15ea-7721-8139-0f8bc952c2a5']);
+            $data = json_decode($request->getContent(), true);
+            $name = $data['name'];
+            $subject = $data['subject'] ;
+            $body = $data['body'];
+            $from = $data['from'] ?? 'arkada@gmail.com';
+            $template = $data['design'];
+            $template .= '.html.twig';
+            $projectDir = $this->getParameter('kernel.project_dir');
 
-        $email = new MailTemplate();
-        $email->setSubject($subject);
-        $email->setBody($body);
-        $email->setUserId($user);
-        $email->setSenderMail($from);
-        $email->setTemplateName($template);
-        $em->persist($email);
-        $em->flush();
+            if (!$user) {
+                throw new \Exception('Utilisateur introuvable.');
+            }
 
-        $response = [
-            'status' => 'success',
-            'message' => 'Modèle d\'e-mail créé avec succès'
-        ];
-        return $this->json($response);
+            $templatePath = $projectDir . '/templates/email/' . $template;
+
+            if (!file_exists($templatePath)) {
+                throw new \Exception("Le template $template n'existe pas.");
+            }
+
+            $email = new MailTemplate();
+            $email->setSubject($subject);
+            $email->setBody($body);
+            $email->setUserId($user);
+            $email->setSenderMail($from);
+            $email->setTemplateName($template);
+            $email->setName($name);
+            $em->persist($email);
+            $em->flush();
+
+            $response = [
+                'status' => 'success',
+                'message' => 'Modèle d\'e-mail créé avec succès'
+            ];
+            return $this->json($response);
+
+        } catch (\Exception $e) {
+            $errorResponse = [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+            return $this->json($errorResponse, JsonResponse::HTTP_BAD_REQUEST);
+        }
     }
 
     #[Route('/update/{id}', name: 'app_template_update', methods: ['PUT'])]
     public function updateTemplate(EntityManagerInterface $em, Request $request, UserRepository $userRepository,string $id, MailTemplateRepository $templateRepository): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id' => "018bf293-b164-7c7b-affe-1c05d452ac6e"]);
+        $user = $userRepository->findOneBy(['id' => "018c5a9f-15ea-7721-8139-0f8bc952c2a5"]);
         $data = json_decode($request->getContent(), true);
-        $subject = $data['subject'] ?? 'Arkada Studio';
-        $body = $data['body'] ?? '';
+        $subject = $data['subject'];
+        $name = $data['name'];
+        $body = $data['body'];
         $from = $data['from'] ?? 'arkada@gmail.com';
-        $template = $data['template'] ?? 'signup.html.twig';
+        $template = $data['design'];
+        $template .= '.html.twig';
 
         $templateUpdate = $templateRepository->findOneBy(['id'=>$id]);
         if (!$templateUpdate) {
@@ -87,6 +135,7 @@ class TemplateEmailController extends AbstractController
         }
 
         $templateUpdate->setSubject($subject);
+        $templateUpdate->setName($name);
         $templateUpdate->setBody($body);
         $templateUpdate->setUserId($user);
         $templateUpdate->setSenderMail($from);
@@ -102,11 +151,9 @@ class TemplateEmailController extends AbstractController
     #[Route('/delete/{id}', name: 'app_template_delete', methods: ['DELETE', 'GET'])]
     public function deleteTemplate(EntityManagerInterface $em, MailTemplateRepository $templateRepository, UserRepository $userRepository, string $id): JsonResponse
     {
-        $user = $userRepository->findOneBy(['id' => "018bf293-b164-7c7b-affe-1c05d452ac6e"]);
-
-        if (!$this->getUser() || !$this->getUser()->isGranted('ROLE_ADMIN')) {
-            return $this->json(['status' => 'error', 'message' => 'Vous n\'avez pas les droits pour supprimer ce modèle'], 403);
-        }
+//        if (!$this->getUser() || !$this->getUser()->isGranted('ROLE_ADMIN')) {
+//            return $this->json(['status' => 'error', 'message' => 'Vous n\'avez pas les droits pour supprimer ce modèle'], 403);
+//        }
 
         $template = $templateRepository->findOneBy(['id'=>$id]);
         if (!$template) {
@@ -117,6 +164,25 @@ class TemplateEmailController extends AbstractController
         $em->flush();
 
         return $this->json(['status' => 'success', 'message' => 'Modèle d\'e-mail supprimé avec succès'], 200);
+    }
+
+    #[Route('/design', name: 'app_templates_design', methods: ['GET'])]
+    public function getTemplateDesign(MailTemplateRepository $templateRepository):JsonResponse
+    {
+        $cheminTemplatesEmail = $this->getParameter('kernel.project_dir') . '/templates/email';
+        $finder = new Finder();
+        $fichiersEmail = $finder->files()
+            ->in($cheminTemplatesEmail)
+            ->name('*.html.twig')
+            ->notPath('/layout/');
+
+        $designs = [];
+
+        foreach ($fichiersEmail as $fichier) {
+            $nameWithoutExtension = str_replace('.html.twig', '', $fichier->getFilename());
+            $designs[] = $nameWithoutExtension;
+        }
+        return $this->json($designs);
     }
 
 }
