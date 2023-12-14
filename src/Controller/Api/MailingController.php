@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Service\MaillingService;
+use App\Controller\Api\UserController;
 use App\DTO\MaillingDTO;
 use App\Entity\Mail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,6 +11,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+
 
 #[Route('/mail', name: 'app_mail')]
 class MailingController extends AbstractController
@@ -21,9 +25,11 @@ class MailingController extends AbstractController
      *
      * @param MaillingService $MaillingService Service for sending emails.
      */
-    public function __construct(MaillingService $MaillingService)
+    public function __construct(MaillingService $MaillingService, TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->MaillingService = $MaillingService;
+        $this->jwtManager = $jwtManager;
+        $this->tokenStorageInterface = $tokenStorageInterface;
     }
 
     /**
@@ -37,9 +43,13 @@ class MailingController extends AbstractController
      * @return JsonResponse Returns a JSON response after creating and sending the email.
      */
     #[Route('/create', name: 'app_mail_create')]
-    public function createEmail(Request $request, MaillingService $maillingService, EntityManagerInterface $entityManager): JsonResponse {
+    public function createEmail(Request $request, MaillingService $maillingService, EntityManagerInterface $entityManager, JWTTokenManagerInterface $JWTManager, UserController $usermanager): JsonResponse {
         $emailData = json_decode($request->getContent(), true);
-
+        $authorizationHeader = $request->headers->get('Authorization');
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $uuid = $decodedJwtToken['uuid'];
+        $user = $usermanager->getOneUserById($uuid,$entityManager);
         if ($emailData !== null) {
             foreach ($emailData['to'] as $recipient) {
                 $maillingDTO = new MaillingDTO();
@@ -53,10 +63,12 @@ class MailingController extends AbstractController
                 $mail = new Mail();
                 $mail->setSubject($maillingDTO->subject);
                 $mail->setBody($maillingDTO->body);
+                //$mail->setTemplateId($maillingDTO->template);
                 $mail->setTimestamp(new \DateTimeImmutable());
                 $mail->setSenderMail($maillingDTO->from);
                 $mail->setReceiver($maillingDTO->to);
                 $mail->setRead(false);
+
 
                 $entityManager->persist($mail);
 

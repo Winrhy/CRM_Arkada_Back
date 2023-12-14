@@ -17,7 +17,6 @@ class TrackingController extends AbstractController
     {
         $id = $request->query->get('id');
         if(null !== $id) {
-            //... executes some logic to retrieve the email and mark it as opened
         }
         return new TransparentPixelResponseController();
     }

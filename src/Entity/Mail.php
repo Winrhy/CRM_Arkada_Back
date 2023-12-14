@@ -64,7 +64,7 @@ class Mail{
     #[ORM\Column]
     private ?bool $read = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: "integer", nullable: true)]
     private ?int $dead_pixel_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'mails')]
@@ -74,7 +74,7 @@ class Mail{
     private ?MailTemplate $template_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'mails')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user_id = null;
 
     #[ORM\OneToMany(mappedBy: 'mail_id', targetEntity: AttachmentMailAssociation::class)]
