@@ -47,11 +47,11 @@ class MailingController extends AbstractController
             foreach ($toRecipients as $recipient) {
                 print('test');
                 $maillingDTO = new MaillingDTO();
-                $maillingDTO->from = $emailData['from'];
+                $maillingDTO->from = $emailData['senderMail'];
                 $maillingDTO->to = $recipient;
                 $maillingDTO->subject = $emailData['subject'] ?? 'Sujet par défaut';
-                $maillingDTO->template = $emailData['template'] ?? 'default_template.html.twig';
-                $maillingDTO->name = $emailData['name'] ?? 'Nom par défaut';
+                $maillingDTO->template = $emailData['templateName'] ?? 'default_template.html.twig';
+//                $maillingDTO->name = $emailData['name'] ?? 'Nom par défaut';
                 $maillingDTO->body = $emailData['body'] ?? 'Corps du message par défaut';
                 $bulkEmailDTOs[] = $maillingDTO;
             }
