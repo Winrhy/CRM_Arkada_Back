@@ -5,6 +5,7 @@
 namespace App\Form\Type;
 
 use App\Entity\Company;
+use App\DTO\CompanyDTO;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -71,7 +72,9 @@ class CompanyType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Company::class,
+            'data_class' => CompanyDTO::class,
+            'csrf_protection' => false,
         ]);
+        
     }
 }

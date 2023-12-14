@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Company;
-use App\Form\CompanyType;
+use App\Form\Type\CompanyType;
 use App\DTO\CompanyDTO;
 use App\Repository\CompanyRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,10 +19,12 @@ class CompanyService
         $this->entityManager = $entityManager;
     }
 
-    public function createCompany(Company $company): void
+    public function createCompany(CompanyDTO $companyDTO): Company
     {
         $this->entityManager->persist($company);
         $this->entityManager->flush();
+
+        return $company;
     }
 
     public function updateCompany(Company $company): void
