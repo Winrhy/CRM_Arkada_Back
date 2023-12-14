@@ -3,7 +3,7 @@
 namespace App\DTO;
 
 use App\Entity\Company;
-use App\Form\CompanyType;
+use App\Form\Type\CompanyType;
 use App\Service\CompanyService;
 
 
@@ -35,5 +35,26 @@ class CompanyDTO
         $this->phoneNumber = $phoneNumber;
         $this->email = $email;
         $this->type = $type;
+    }
+
+    
+    /**
+     * Maps the DTO properties to a Company entity.
+     *
+     * @param Company $company The company entity to map the properties to.
+     */
+    public function mapToEntity(Company $company): void
+    {
+        $company->setName($this->name);
+        $company->setAddress($this->address);
+        $company->setCountry($this->country);
+        $company->setCity($this->city);
+        $company->setPostalCode($this->postalCode);
+        $company->setSector($this->sector);
+        $company->setSize($this->size);
+        $company->setWebsite($this->website);
+        $company->setPhoneNumber($this->phoneNumber);
+        $company->setEmail($this->email);
+        $company->setType($this->type);
     }
 }

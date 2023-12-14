@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Company;
-use App\Form\CompanyType;
+use App\Form\Type\CompanyType;
 use App\DTO\CompanyDTO;
 use App\Repository\CompanyRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,16 +19,20 @@ class CompanyService
         $this->entityManager = $entityManager;
     }
 
-    public function createCompany(Company $company): void
+    public function createCompany(CompanyDTO $companyDTO): Company
     {
-        // Vous pouvez ajouter ici de la logique supplémentaire avant la persistance
+        $company = new Company();
+        $companyDTO->mapToEntity($company);
+        $company->setCreatedAt(new \DateTimeImmutable());
+
         $this->entityManager->persist($company);
         $this->entityManager->flush();
+
+        return $company;
     }
 
     public function updateCompany(Company $company): void
     {
-        // La mise à jour est généralement gérée automatiquement, mais vous pouvez ajouter de la logique ici si nécessaire
         $this->entityManager->flush();
     }
 

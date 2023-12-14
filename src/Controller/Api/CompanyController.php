@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Company;
-use App\Form\CompanyType;
+use App\Form\Type\CompanyType;
 use App\Service\CompanyService;
 use App\DTO\CompanyDTO;
 
@@ -33,18 +33,18 @@ class CompanyController extends AbstractController
      * @return JsonResponse The response object with status code and message.
      */
     #[Route('', name: 'company_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(Request $request): JsonResponse 
     {
-        $company = new Company();
-        $form = $this->createForm(CompanyType::class, $company);
+        $companyDTO = new CompanyDTO();
+        $form = $this->createForm(CompanyType::class, $companyDTO);
         $form->submit(json_decode($request->getContent(), true));
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->companyService->createCompany($company);
-            return $this->json($company, Response::HTTP_CREATED);
+            $company = $this->companyService->createcompany($companyDTO);
+            return $this->json($company, JsonResponse::HTTP_CREATED);
         }
 
-        return $this->json(['errors' => (string) $form->getErrors(true, false)], Response::HTTP_BAD_REQUEST);
+        return $this->json(['errors' => (string) $form->getErrors(true, false)], JsonResponse::HTTP_BAD_REQUEST);
     }
 
 
