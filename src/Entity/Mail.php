@@ -64,7 +64,7 @@ class Mail{
     #[ORM\Column]
     private ?bool $read = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $dead_pixel_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'mails')]

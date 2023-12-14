@@ -109,4 +109,15 @@ class ContactController extends AbstractController
         $contacts = $this->contactService->getAllContacts();
         return $this->json($contacts);
     }
+
+    /**
+     * List all email contacts.
+     *
+     * @return JsonResponse The JSON response.
+     */
+    #[Route('/get/emails', name: 'contact_list_email', methods: ['GET'])]
+    public function email(): JsonResponse {
+        $contacts = $this->contactService->getAllContactEmail();
+        return $this->json($contacts);
+    }
 }

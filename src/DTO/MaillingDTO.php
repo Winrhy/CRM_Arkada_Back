@@ -10,6 +10,9 @@ class MaillingDTO
     public string $to;
     public string $subject = 'Arkada Studio';
     public string $template = 'signup.html.twig';
-    public string $name;
+    public string $name = '';
     public string $body = '';
+    public string $email_id;
+    public string $password ='';
+    public string $last_name = '';
 }

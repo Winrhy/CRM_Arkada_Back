@@ -23,18 +23,17 @@ class TrackingController extends AbstractController
     }
 
     #[Route('/tracking_pixel/{email_id}', name: 'tracking_pixel')]
-    public function pixel($email_id, MailRepository $mailRepository, EntityManagerInterface $em):Response
-    {
-        $email = $mailRepository->findOneBy(['id'=>$email_id]);
-        $email->setRead(true);
-        $em->persist($email);
-        $em->flush();
-        $pixelContent = base64_decode('R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=');
+     public function pixel($email_id, MailRepository $mailRepository, EntityManagerInterface $em):Response
+     {
+         $email = $mailRepository->findOneBy(['id'=>$email_id]);
+         $email->setRead(true);
+         $em->persist($email);
+         $em->flush();
+         $pixelContent = base64_decode('R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=');
 
-        $response = new Response($pixelContent);
-        $response->headers->set('Content-Type', 'image/gif');
+         $response = new Response($pixelContent);
+         $response->headers->set('Content-Type', 'image/gif');
 
-        return $this->json('ok');
-    }
-
+         return $response;
+     }
 }
