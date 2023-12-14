@@ -79,8 +79,7 @@ class MailingController extends AbstractController
 
             $entityManager->flush();
 
-            $ok = $maillingService->sendBulkEmails($bulkEmailDTOs);
-            return $this->json($ok);
+            $maillingService->sendBulkEmails($bulkEmailDTOs);
             return $this->json([
                 'message' => 'Emails envoyés avec succès!',
             ]);
