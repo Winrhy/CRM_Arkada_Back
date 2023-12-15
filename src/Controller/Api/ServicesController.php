@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class ServicesController extends AbstractController
+class FilterController extends AbstractController
 {
     #[Route('/filter', name: 'contact_filter', methods: ['GET'])]
     public function filter(Request $request, ContactRepository $repository): JsonResponse
