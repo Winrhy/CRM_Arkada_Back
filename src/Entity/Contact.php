@@ -118,7 +118,7 @@ class Contact
 
     public function setId(string $uuid): void
     {
-        $this->id = UuidV6::fromString($uuid);
+        $this->id = Uuid::fromString($uuid);
     }
 
     public function getFirstName(): ?string
