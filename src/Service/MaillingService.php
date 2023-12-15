@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use App\DTO\MaillingDTO;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -51,6 +54,7 @@ class MaillingService
                         'last_name'=>$emailDTO->last_name,
                         'from'=>$emailDTO->from,
                         'to'=>$emailDTO->to,
+                        'token'=>$emailDTO->token,
                     ]);
 
                 try {
@@ -62,4 +66,5 @@ class MaillingService
             sleep($pauseInterval);
         }
     }
+
 }
