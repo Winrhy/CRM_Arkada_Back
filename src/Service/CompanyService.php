@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Company;
+use App\Entity\Contact;
 use App\Form\Type\CompanyType;
 use App\DTO\CompanyDTO;
 use App\Repository\CompanyRepository;
@@ -21,6 +22,10 @@ class CompanyService
 
     public function createCompany(CompanyDTO $companyDTO): Company
     {
+        $company = new Company();
+        $companyDTO->mapToEntity($company);
+        $company->setCreatedAt(new \DateTimeImmutable());
+
         $this->entityManager->persist($company);
         $this->entityManager->flush();
 

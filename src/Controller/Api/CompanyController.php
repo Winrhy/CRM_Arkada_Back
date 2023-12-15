@@ -35,9 +35,12 @@ class CompanyController extends AbstractController
     #[Route('', name: 'company_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse 
     {
+
         $companyDTO = new CompanyDTO();
         $form = $this->createForm(CompanyType::class, $companyDTO);
         $form->submit(json_decode($request->getContent(), true));
+
+
 
         if ($form->isSubmitted() && $form->isValid()) {
             $company = $this->companyService->createcompany($companyDTO);
