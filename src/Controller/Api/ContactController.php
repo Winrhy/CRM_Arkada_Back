@@ -2,213 +2,111 @@
 
 namespace App\Controller\Api;
 
+use App\DTO\ContactDTO;
+use App\Form\Type\ContactType;
+use App\Service\ContactService;
 use App\Entity\Contact;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\ContactRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Uid\UuidV6 as Uuid;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 
 #[Route('/contact')]
 class ContactController extends AbstractController
 {
+    private ContactService $contactService;
+
+    /**
+     * Constructor for ContactController.
+     *
+     * @param ContactService $contactService The service for handling contact operations.
+     */
+    public function __construct(ContactService $contactService)
+    {
+        $this->contactService = $contactService;
+    }
+
     /**
      * Create a new contact.
      *
-     * @param Request                $request
-     * @param EntityManagerInterface $entityManager
-     * @param SerializerInterface    $serializer
-     * @param ValidatorInterface     $validator
+     * @param Request $request The HTTP request object.
      *
-     * @return JsonResponse
-     *
+     * @return JsonResponse The JSON response.
      */
     #[Route('', name: 'contact_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse {
-        // Get JSON data from the request
-        $contactData = $request->getContent();
+    public function create(Request $request): JsonResponse {
+        $contactDTO = new ContactDTO();
+        $form = $this->createForm(ContactType::class, $contactDTO);
+        $form->submit(json_decode($request->getContent(), true));
 
-        try {
-            // Deserialize the data into a Contact object
-            $contact = $serializer->deserialize($contactData, Contact::class, 'json');
-        } catch (\Exception $e) {
-            // Handle deserialization errors
-            return $this->json(['error' => 'Invalid JSON: ' . $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $contact = $this->contactService->createContact($contactDTO);
+            return $this->json($contact, JsonResponse::HTTP_CREATED);
         }
 
-        // Validate the Contact object
-        $errors = $validator->validate($contact);
-        if (count($errors) > 0) {
-            // If there are validation errors, return them
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
-            }
-            return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        // Persist the Contact object in the database
-        $createdAt = new \DateTimeImmutable();
-        $contact->setCreatedAt($createdAt);
-        $entityManager->persist($contact);
-        $entityManager->flush();
-
-        // Return a success response
-        return $this->json([
-            'message' => 'Contact created successfully',
-            'contact' => $contact
-        ], JsonResponse::HTTP_CREATED);
+        return $this->json(['errors' => (string) $form->getErrors(true, false)], JsonResponse::HTTP_BAD_REQUEST);
     }
-
 
     /**
      * Read a specific contact by ID.
      *
-     * Retrieves the details of a specific contact by its ID.
+     * @param Contact $contact The contact entity.
      *
-     * @Route("/contact/{id}", name="contact_read", methods={"GET"})
-     *
-     * @param Contact $contact The contact entity retrieved by its ID.
-     *
-     * @return JsonResponse A JSON response containing the contact details.
+     * @return JsonResponse The JSON response.
      */
-    #[Route('/{id}', name: 'contact_by_id', methods: ['GET'])]
-    public function read(Contact $contact): JsonResponse
-    {
-        return $this->json([
-            'contact' => $contact,
-        ]);
+    #[Route('/{id}', name: 'contact_read', methods: ['GET'])]
+    #[ParamConverter('contact', class: Contact::class)]
+    public function read(Contact $contact): JsonResponse {
+        return $this->json($contact);
     }
-
 
     /**
      * Update a specific contact by ID.
      *
-     * Updates an existing contact with the data sent in the request body.
-     *
-     * @Route("/contact/{id}", name="contact_update", methods={"PUT"})
-     *
      * @param Request $request The HTTP request object.
-     * @param Contact $contact The contact entity to update.
-     * @param EntityManagerInterface $entityManager The entity manager for database operations.
-     * @param SerializerInterface $serializer The serializer for deserializing request data.
-     * @param ValidatorInterface $validator The validator for validating the contact data.
+     * @param Contact $contact The contact entity.
      *
-     * @return JsonResponse A JSON response indicating the result of the update.
+     * @return JsonResponse The JSON response.
      */
     #[Route('/{id}', name: 'contact_update', methods: ['PUT'])]
-    public function update(Request $request, Contact $contact, EntityManagerInterface $entityManager, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
-    {
-        // Check if the contact exists
-        if (!$contact) {
-            return $this->json(['error' => 'Contact not found'], JsonResponse::HTTP_NOT_FOUND);
+    #[ParamConverter('contact', class: Contact::class)]
+    public function update(Request $request, Contact $contact): JsonResponse {
+        $contactDTO = ContactDTO::createFromEntity($contact);
+        $form = $this->createForm(ContactType::class, $contactDTO);
+        $form->submit(json_decode($request->getContent(), true));
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->contactService->updateContact($contact, $contactDTO);
+            return $this->json($contact);
         }
 
-        // Get JSON data from the request
-        $contactData = $request->getContent();
-
-        try {
-            // Deserialize the data into the existing Contact object
-            $serializer->deserialize($contactData, Contact::class, 'json', ['object_to_populate' => $contact]);
-        } catch (\Exception $e) {
-            // Handle deserialization errors
-            return $this->json(['error' => 'Invalid JSON: ' . $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        // Validate the updated Contact object
-        $errors = $validator->validate($contact);
-        if (count($errors) > 0) {
-            // If there are validation errors, return them
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
-            }
-            return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        // Update the modified_at timestamp
-        $contact->setModifiedAt(new \DateTimeImmutable());
-
-        // Persist the updated Contact object in the database
-        $entityManager->flush();
-
-        return $this->json(['message' => 'Contact updated successfully', 'contact' => $contact]);
+        return $this->json(['errors' => (string) $form->getErrors(true, false)], JsonResponse::HTTP_BAD_REQUEST);
     }
-
 
     /**
      * Delete a specific contact by ID.
      *
-     * Deletes a specific contact by its ID.
+     * @param Contact $contact The contact entity.
      *
-     * @Route("/contact/{id}", name="contact_delete", methods={"DELETE"})
-     *
-     * @param Contact $contact The contact entity to delete.
-     *
-     * @return JsonResponse A JSON response indicating the result of the deletion.
+     * @return JsonResponse The JSON response.
      */
     #[Route('/{id}', name: 'contact_delete', methods: ['DELETE'])]
-    public function delete(Contact $contact, EntityManagerInterface $entityManager): JsonResponse
-    {
-        // Check if the contact exists
-        if (!$contact) {
-            return $this->json(['error' => 'Contact not found'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        // Remove the contact from the database
-        $entityManager->remove($contact);
-        $entityManager->flush();
-
-        return $this->json(['message' => 'Contact deleted successfully'], JsonResponse::HTTP_OK);
+    #[ParamConverter('contact', class: Contact::class)]
+    public function delete(Contact $contact): JsonResponse {
+        $this->contactService->deleteContact($contact);
+        return $this->json(['message' => 'Contact deleted successfully']);
     }
-
 
     /**
      * List all contacts.
      *
-     * This method returns a list of all contacts.
-     *
-     * @param ContactRepository $repository The Contact repository.
-     *
-     * @return JsonResponse A JSON response containing the list of contacts.
+     * @return JsonResponse The JSON response.
      */
     #[Route('', name: 'contact_list', methods: ['GET'])]
-    public function list(ContactRepository $repository): JsonResponse
-    {
-        $contacts = $repository->findAll();
-        $contactData = [];
-
-        foreach ($contacts as $contact) {
-            $contactData[] = [
-                'id' => $contact->getId(),
-                'first_name' => $contact->getFirstName(),
-                'last_name' => $contact->getLastName(),
-                'birthdate' => $contact->getBirthdate() ? $contact->getBirthdate()->format('Y-m-d') : null,
-                'email' => $contact->getEmail(),
-                'address' => $contact->getAddress(),
-                'country' => $contact->getCountry(),
-                'city' => $contact->getCity(),
-                'postal_code' => $contact->getPostalCode(),
-                'marketing' => $contact->isMarketing(),
-                'type' => $contact->getType(),
-                'status' => $contact->getStatus(),
-                'created_at' => $contact->getCreatedAt() ? $contact->getCreatedAt()->format('c') : null,
-                'modified_at' => $contact->getModifiedAt() ? $contact->getModifiedAt()->format('c') : null,
-                'last_interaction' => $contact->getLastInteraction() ? $contact->getLastInteraction()->format('c') : null,
-                'interaction_count' => $contact->getInteractionCount(),
-                'comment' => $contact->getComment(),
-                'source' => $contact->getSource(),
-                'language' => $contact->getLanguage(),
-                'user_id' => $contact->getUserId() ? $contact->getUserId()->getId() : null,
-            ];
-        }
-
-        return $this->json($contactData);
+    public function list(): JsonResponse {
+        $contacts = $this->contactService->getAllContacts();
+        return $this->json($contacts);
     }
 }

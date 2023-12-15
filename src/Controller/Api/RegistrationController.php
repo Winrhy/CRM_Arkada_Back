@@ -14,49 +14,112 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class RegistrationController extends AbstractController
 {
-
+    /**
+     * Constructor for RegistrationController.
+     *
+     * @param JWTTokenManagerInterface $jwtManager The JWT token manager service.
+     */
     public function __construct(JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
     }
 
-    #[Route('/register', name: 'app_register', methods: ['POST'])]
-    public function register(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
-    {
 
+    /**
+     * Handles the user registration process.
+     *
+     * Accepts a POST request with user credentials, creates a new User entity, hashes the password,
+     * and saves the new user to the database. Returns a JSON response with registration details.
+     *
+     * @param EntityManagerInterface $em The entity manager interface for database interaction.
+     * @param Request $request The HTTP request object, containing user data.
+     * @param UserPasswordHasherInterface $passwordHasher The hasher interface for user passwords.
+     * @return JsonResponse Returns a JSON response containing a success message and user data.
+     */
+    #[Route('/register', name: 'app_register', methods: ['POST'])]
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
+    {
         $decoder = json_decode($request->getContent());
-        $email = $decoder->email;
-        $plainPassword = $decoder->password;
-        $firstName = $decoder->firstName;
-        $lastName = $decoder->lastName;
-        $now = new \DateTimeImmutable('now');
+
+        // Validate JSON and required fields
+        if (!$decoder || !isset($decoder->email, $decoder->password, $decoder->firstName, $decoder->lastName)) {
+            return $this->json(['message' => 'Invalid data provided'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Check if user with the same email already exists
+        $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $decoder->email]);
+        if ($existingUser) {
+            return $this->json(['message' => 'User with this email already exists'], JsonResponse::HTTP_CONFLICT);
+        }
+
+        // Proceed with user creation
         $user = new User();
-        $hashPassword = $passwordHasher->hashPassword($user,$plainPassword);
-        $user->setPassword($hashPassword);
-        $user->setEmail($email);
-//        $user->setUsername($email);
-        $user->setFirstName($firstName);
-        $user->setLastName($lastName);
-        $user->setCreatedAt($now);
-        $em->persist($user);
-        $em->flush();
+        $hashedPassword = $passwordHasher->hashPassword($user, $decoder->password);
+        $user->setPassword($hashedPassword);
+        $user->setEmail($decoder->email);
+        $user->setFirstName($decoder->firstName);
+        $user->setLastName($decoder->lastName);
+        $user->setCreatedAt(new \DateTimeImmutable());
+
+        try {
+            $em->persist($user);
+            $em->flush();
+        } catch (\Exception $e) {
+            return $this->json(['message' => 'Error occurred while registering user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'message' => 'Registration successful',
+            'success' => true,
+            'userId' => $user->getId(),
+        ]);
+    }
+
+    #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['POST'])]
+    public function resetPassword(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
 
         return $this->json([
             'message' => 'Registration for the Arkada CRM successful',
             'success' => true,
-            'user' => $user,
         ]);
     }
 
+
+    /**
+     * Retrieves and returns all users.
+     *
+     * Handles a GET request to fetch all users from the database.
+     * Returns a JSON response with the list of users.
+     *
+     * @param EntityManagerInterface $em The entity manager interface for database interaction.
+     * @param Request $request The HTTP request object.
+     * @param UserPasswordHasherInterface $passwordHasher The hasher interface for user passwords.
+     * @return JsonResponse Returns a JSON response containing the list of all users.
+     */
     #[Route('/users', name: 'app_users', methods: ['GET'])]
-    public function getAllUsers(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function getAllUsers(EntityManagerInterface $em, Request $request): JsonResponse
     {
+        try {
+            // Implementing basic pagination
+            $limit = $request->query->get('limit', 10);
+            $offset = $request->query->get('offset', 0);
 
-        $users = $em->getRepository(User::class)->findAll();
+            $users = $em->getRepository(User::class)->findBy([], null, $limit, $offset);
 
-        return $this->json([
-            'users' => $users,
-        ]);
+            // Use a DTO or Serializer to control exposed user data
+            $userData = [];
+            foreach ($users as $user) {
+                $userData[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                ];
+            }
+
+            return $this->json(['users' => $userData]);
+        } catch (\Exception $e) {
+            // Handle any exceptions during the database operation
+            return $this->json(['message' => 'Error occurred while fetching users'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-
 }

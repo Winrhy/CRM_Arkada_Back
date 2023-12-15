@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20231211113127 extends AbstractMigration
+final class Version20231211204100 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -129,7 +129,7 @@ final class Version20231211113127 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN mail.template_id_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN mail.user_id_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN mail.timestamp IS \'(DC2Type:datetime_immutable)\'');
-        $this->addSql('CREATE TABLE mail_template (id UUID NOT NULL, user_id_id UUID NOT NULL, subject VARCHAR(255) NOT NULL, body TEXT NOT NULL, sender_mail VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE mail_template (id UUID NOT NULL, user_id_id UUID NOT NULL, subject VARCHAR(255) NOT NULL, body TEXT NOT NULL, sender_mail VARCHAR(255) NOT NULL, template_name VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_4AB7DECB9D86650F ON mail_template (user_id_id)');
         $this->addSql('COMMENT ON COLUMN mail_template.id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN mail_template.user_id_id IS \'(DC2Type:uuid)\'');
@@ -147,10 +147,10 @@ final class Version20231211113127 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN segment_contact_association.id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN segment_contact_association.segment_id_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN segment_contact_association.contact_id_id IS \'(DC2Type:uuid)\'');
-        $this->addSql('CREATE TABLE task (id UUID NOT NULL, user_id UUID NOT NULL, title VARCHAR(255) NOT NULL, description TEXT DEFAULT NULL, status VARCHAR(255) NOT NULL, due_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, modified_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE INDEX IDX_527EDB25A76ED395 ON task (user_id)');
+        $this->addSql('CREATE TABLE task (id UUID NOT NULL, user_id_id UUID NOT NULL, title VARCHAR(255) NOT NULL, description TEXT DEFAULT NULL, status VARCHAR(255) NOT NULL, due_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, modified_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE INDEX IDX_527EDB259D86650F ON task (user_id_id)');
         $this->addSql('COMMENT ON COLUMN task.id IS \'(DC2Type:uuid)\'');
-        $this->addSql('COMMENT ON COLUMN task.user_id IS \'(DC2Type:uuid)\'');
+        $this->addSql('COMMENT ON COLUMN task.user_id_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN task.due_date IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('COMMENT ON COLUMN task.created_at IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('COMMENT ON COLUMN task.modified_at IS \'(DC2Type:datetime_immutable)\'');
@@ -189,7 +189,7 @@ final class Version20231211113127 extends AbstractMigration
         $this->addSql('ALTER TABLE segment_campaign_association ADD CONSTRAINT FK_8D3C1D183141FA38 FOREIGN KEY (campaign_id_id) REFERENCES campaign (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE segment_contact_association ADD CONSTRAINT FK_87F6E5DF6A411099 FOREIGN KEY (segment_id_id) REFERENCES segment (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE segment_contact_association ADD CONSTRAINT FK_87F6E5DF526E8E58 FOREIGN KEY (contact_id_id) REFERENCES contact (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE task ADD CONSTRAINT FK_527EDB25A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE task ADD CONSTRAINT FK_527EDB259D86650F FOREIGN KEY (user_id_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
     }
 
     public function down(Schema $schema): void
@@ -225,7 +225,7 @@ final class Version20231211113127 extends AbstractMigration
         $this->addSql('ALTER TABLE segment_campaign_association DROP CONSTRAINT FK_8D3C1D183141FA38');
         $this->addSql('ALTER TABLE segment_contact_association DROP CONSTRAINT FK_87F6E5DF6A411099');
         $this->addSql('ALTER TABLE segment_contact_association DROP CONSTRAINT FK_87F6E5DF526E8E58');
-        $this->addSql('ALTER TABLE task DROP CONSTRAINT FK_527EDB25A76ED395');
+        $this->addSql('ALTER TABLE task DROP CONSTRAINT FK_527EDB259D86650F');
         $this->addSql('DROP TABLE attachment');
         $this->addSql('DROP TABLE attachment_mail_association');
         $this->addSql('DROP TABLE attachment_template_mail_association');
