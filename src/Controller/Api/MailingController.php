@@ -57,6 +57,7 @@ class MailingController extends AbstractController
                 $maillingDTO->name = $recipient['firstname'] ?? '';
                 $maillingDTO->last_name=$recipient['lastname'] ?? '';
                 $maillingDTO->password = $emailData['password'] ??'';
+                $maillingDTO->token = $emailData['token'] ??'';
 
 
                 $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());

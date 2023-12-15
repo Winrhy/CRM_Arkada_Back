@@ -42,4 +42,50 @@ class UserController extends AbstractController
             'user' => $userWeb,
         ]);
     }
+
+    #[Route('/update-token-user', name: 'app_update_user_token', methods: ['POST'])]
+    public function updateUserToken(EntityManagerInterface $em, Request $request): JsonResponse
+    {
+
+        $decoder = json_decode($request->getContent());
+
+        $userDatabase = $em->getRepository(User::class)->findOneBy(['email' => $decoder->email]);
+
+        $userDatabase->setJwtToken($decoder->token);
+
+        try {
+            $em->persist($userDatabase);
+            $em->flush();
+        } catch (\Exception $e) {
+            return $this->json(['message' => 'Error occurred while updating user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'message' => 'User correctement modifié',
+        ]);
+    }
+
+    #[Route('/update-password-user', name: 'app_update_user_password', methods: ['POST'])]
+    public function updateUserPassword(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+
+        $decoder = json_decode($request->getContent());
+        $userDatabase = $em->getRepository(User::class)->findOneBy(['jwt_token' => $decoder->token]);
+        if ($userDatabase){
+            $hashPassword = $passwordHasher->hashPassword($userDatabase,$decoder->password);
+            $userDatabase->setPassword($hashPassword);
+            try {
+                $em->persist($userDatabase);
+                $em->flush();
+            } catch (\Exception $e) {
+                return $this->json(['message' => 'Error occurred while updating user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            return $this->json(['message' => 'Error occurred while updating user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'message' => 'User correctement modifié',
+        ]);
+    }
 }

@@ -15,4 +15,5 @@ class MaillingDTO
     public string $email_id;
     public string $password ='';
     public string $last_name = '';
+    public string $token = '';
 }

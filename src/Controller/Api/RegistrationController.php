@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\DTO\MaillingDTO;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -19,9 +20,10 @@ class RegistrationController extends AbstractController
      *
      * @param JWTTokenManagerInterface $jwtManager The JWT token manager service.
      */
-    public function __construct(JWTTokenManagerInterface $jwtManager)
+    public function __construct(JWTTokenManagerInterface $jwtManager, MailingController $mailingController)
     {
         $this->jwtManager = $jwtManager;
+        $this->mailingController = $mailingController;
     }
 
 
@@ -37,12 +39,12 @@ class RegistrationController extends AbstractController
      * @return JsonResponse Returns a JSON response containing a success message and user data.
      */
     #[Route('/register', name: 'app_register', methods: ['POST'])]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
+    public function register(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $decoder = json_decode($request->getContent());
 
         // Validate JSON and required fields
-        if (!$decoder || !isset($decoder->email, $decoder->password, $decoder->firstName, $decoder->lastName)) {
+        if (!$decoder || !isset($decoder->email,$decoder->firstName, $decoder->lastName)) {
             return $this->json(['message' => 'Invalid data provided'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -52,10 +54,15 @@ class RegistrationController extends AbstractController
             return $this->json(['message' => 'User with this email already exists'], JsonResponse::HTTP_CONFLICT);
         }
 
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $password = '';
+
+        for ($i = 0; $i < 10 ; $i++) {
+            $password .= $characters[rand(0, strlen($characters) - 1)];
+        }
         // Proceed with user creation
         $user = new User();
-        $hashedPassword = $passwordHasher->hashPassword($user, $decoder->password);
-        $user->setPassword($hashedPassword);
+        $user->setPassword($password);
         $user->setEmail($decoder->email);
         $user->setFirstName($decoder->firstName);
         $user->setLastName($decoder->lastName);
@@ -72,6 +79,7 @@ class RegistrationController extends AbstractController
             'message' => 'Registration successful',
             'success' => true,
             'userId' => $user->getId(),
+            'user' => $user,
         ]);
     }
 
